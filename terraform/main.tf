@@ -10,5 +10,12 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region  = var.aws_region
+  profile = "fgoharvest"
+
+  default_tags {
+    tags = {
+      Project = "eventstats"
+    }
+  }
 }
