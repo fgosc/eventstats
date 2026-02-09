@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from urllib.request import urlopen
 
 import boto3
 from botocore.exceptions import ClientError
@@ -9,6 +10,9 @@ s3 = boto3.client("s3")
 BUCKET = os.environ["S3_BUCKET_NAME"]
 EVENTS_KEY = "events.json"
 EXCLUSIONS_KEY = "exclusions.json"
+HARVEST_ALL_URL = (
+    "https://fgojunks.max747.org/harvest/contents/quest/all.json"
+)
 
 
 def lambda_handler(event, context):
@@ -34,6 +38,8 @@ def lambda_handler(event, context):
             return put_exclusions(
                 quest_id, json.loads(event.get("body", "{}"))
             )
+        if path == "/harvest/quests" and method == "GET":
+            return get_harvest_quests()
         return response(404, {"error": "Not found"})
     except Exception as e:
         return response(500, {"error": str(e)})
@@ -134,6 +140,15 @@ def put_exclusions(quest_id, body):
     data[quest_id] = body
     write_json(EXCLUSIONS_KEY, data)
     return response(200, body)
+
+
+# --- Harvest proxy ---
+
+
+def get_harvest_quests():
+    with urlopen(HARVEST_ALL_URL) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    return response(200, data)
 
 
 # --- Response helper ---

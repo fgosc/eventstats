@@ -1,7 +1,12 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getEvents, createEvent, updateEvent } from "../api/client";
-import type { EventData, Quest } from "../types";
+import {
+  getEvents,
+  createEvent,
+  updateEvent,
+  fetchHarvestQuests,
+} from "../api/client";
+import type { EventData, Quest, HarvestQuest } from "../types";
 
 export function EventFormPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -15,6 +20,10 @@ export function EventFormPage() {
   const [loading, setLoading] = useState(isEdit);
   const [error, setError] = useState("");
 
+  // Harvest クエスト候補
+  const [candidates, setCandidates] = useState<HarvestQuest[]>([]);
+  const [candidatesLoading, setCandidatesLoading] = useState(false);
+
   useEffect(() => {
     if (!isEdit) return;
     getEvents()
@@ -27,7 +36,7 @@ export function EventFormPage() {
         setName(ev.name);
         setStart(toLocalInput(ev.period.start));
         setEnd(toLocalInput(ev.period.end));
-        setQuests(ev.quests);
+        setQuests([...ev.quests].sort(sortByLevel));
       })
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Failed to load"),
@@ -61,20 +70,66 @@ export function EventFormPage() {
   };
 
   const addQuest = () => {
-    setQuests([...quests, { questId: "", name: "", level: "90+", ap: 40 }]);
+    setQuests(
+      [...quests, { questId: "", name: "", level: "", ap: 40 }].sort(sortByLevel),
+    );
   };
 
   const removeQuest = (index: number) => {
     setQuests(quests.filter((_, i) => i !== index));
   };
 
-  const updateQuest = (index: number, field: keyof Quest, value: string | number) => {
+  const updateQuest = (
+    index: number,
+    field: keyof Quest,
+    value: string | number,
+  ) => {
+    const updated = quests.map((q, i) =>
+      i === index ? { ...q, [field]: value } : q,
+    );
+    if (field === "level") {
+      updated.sort(sortByLevel);
+    }
+    setQuests(updated);
+  };
+
+  const fetchCandidates = async () => {
+    if (!start || !end) {
+      setError("候補取得にはイベント期間の入力が必要です");
+      return;
+    }
+    setCandidatesLoading(true);
+    setError("");
+    try {
+      const all = await fetchHarvestQuests();
+      const startDate = new Date(toISO(start));
+      const endDate = new Date(toISO(end));
+      const filtered = all.filter((q) => {
+        if (q.is_freequest) return false;
+        const since = new Date(q.since);
+        return since >= startDate && since <= endDate;
+      });
+      setCandidates(filtered);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Harvest データ取得に失敗",
+      );
+    } finally {
+      setCandidatesLoading(false);
+    }
+  };
+
+  const addCandidate = (c: HarvestQuest) => {
+    if (quests.some((q) => q.questId === c.id)) return;
+    const questName = c.place || c.chapter || c.name;
     setQuests(
-      quests.map((q, i) => (i === index ? { ...q, [field]: value } : q)),
+      [...quests, { questId: c.id, name: questName, level: "", ap: 40 }].sort(sortByLevel),
     );
   };
 
   if (loading) return <p>読み込み中...</p>;
+
+  const addedIds = new Set(quests.map((q) => q.questId));
 
   return (
     <div style={{ maxWidth: 800, margin: "24px auto", padding: 24 }}>
@@ -119,6 +174,76 @@ export function EventFormPage() {
         </div>
 
         <h2>クエスト一覧</h2>
+
+        {/* Harvest 候補取得 */}
+        <div
+          style={{
+            border: "1px solid #b0c4de",
+            background: "#f0f8ff",
+            padding: 12,
+            marginBottom: 16,
+            borderRadius: 4,
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <strong>Harvest からクエスト候補を取得</strong>
+            <button
+              type="button"
+              onClick={fetchCandidates}
+              disabled={candidatesLoading}
+            >
+              {candidatesLoading ? "取得中..." : "候補を取得"}
+            </button>
+          </div>
+          <p style={{ fontSize: 12, color: "#666", margin: "4px 0 0" }}>
+            イベント期間内に報告があるクエスト (is_freequest=false) を取得します。
+            level と AP は手動で設定してください。
+          </p>
+
+          {candidates.length > 0 && (
+            <table
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                marginTop: 8,
+                fontSize: 14,
+              }}
+            >
+              <thead>
+                <tr>
+                  <th style={candidateTh}>名前</th>
+                  <th style={candidateTh}>報告数</th>
+                  <th style={candidateTh}>初回報告</th>
+                  <th style={candidateTh}>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                {candidates.map((c) => (
+                  <tr key={c.id}>
+                    <td style={candidateTd}>{c.name}</td>
+                    <td style={candidateTd}>{c.count}</td>
+                    <td style={candidateTd}>
+                      {new Date(c.since).toLocaleDateString("ja-JP")}
+                    </td>
+                    <td style={candidateTd}>
+                      {addedIds.has(c.id) ? (
+                        <span style={{ color: "#888" }}>追加済み</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => addCandidate(c)}
+                        >
+                          追加
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+
         {quests.map((q, i) => (
           <div
             key={i}
@@ -200,6 +325,24 @@ export function EventFormPage() {
   );
 }
 
+const SUFFIX_ORDER = ["", "+", "++", "+++", "\u2605", "\u2605\u2605", "\u2605\u2605\u2605"];
+
+function parseLevelKey(level: string): [number, number] {
+  const m = level.match(/^(\d+)(.*)/);
+  if (!m) return [0, 0];
+  const num = parseInt(m[1], 10);
+  const suffix = m[2];
+  const suffixIdx = SUFFIX_ORDER.indexOf(suffix);
+  return [num, suffixIdx >= 0 ? suffixIdx : SUFFIX_ORDER.length];
+}
+
+function sortByLevel(a: Quest, b: Quest): number {
+  const [aNum, aSuf] = parseLevelKey(a.level);
+  const [bNum, bSuf] = parseLevelKey(b.level);
+  if (aNum !== bNum) return aNum - bNum;
+  return aSuf - bSuf;
+}
+
 function toLocalInput(iso: string): string {
   const d = new Date(iso);
   const offset = 9 * 60;
@@ -210,3 +353,14 @@ function toLocalInput(iso: string): string {
 function toISO(localInput: string): string {
   return localInput + ":00+09:00";
 }
+
+const candidateTh: React.CSSProperties = {
+  borderBottom: "1px solid #b0c4de",
+  padding: "4px 8px",
+  textAlign: "left",
+};
+
+const candidateTd: React.CSSProperties = {
+  borderBottom: "1px solid #dde",
+  padding: "4px 8px",
+};

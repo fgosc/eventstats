@@ -91,3 +91,11 @@ resource "aws_apigatewayv2_route" "put_exclusions" {
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
+
+resource "aws_apigatewayv2_route" "get_harvest_quests" {
+  api_id             = aws_apigatewayv2_api.admin.id
+  route_key          = "GET /harvest/quests"
+  target             = "integrations/${aws_apigatewayv2_integration.admin_api.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}

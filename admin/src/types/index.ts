@@ -25,3 +25,14 @@ export interface Exclusion {
   reportId: string;
   reason: string;
 }
+
+export interface HarvestQuest {
+  id: string;
+  name: string;
+  is_freequest: boolean;
+  chapter: string;
+  place: string;
+  since: string;
+  latest: string;
+  count: number;
+}

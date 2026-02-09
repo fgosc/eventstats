@@ -1,5 +1,5 @@
 import { fetchAuthSession } from "aws-amplify/auth";
-import type { EventData, EventsResponse, Exclusion } from "../types";
+import type { EventData, EventsResponse, Exclusion, HarvestQuest } from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL as string;
 
@@ -58,4 +58,8 @@ export function updateExclusions(questId: string, exclusions: Exclusion[]) {
     method: "PUT",
     body: JSON.stringify(exclusions),
   });
+}
+
+export function fetchHarvestQuests() {
+  return request<HarvestQuest[]>("/harvest/quests");
 }

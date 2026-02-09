@@ -15,6 +15,11 @@ resource "aws_iam_role" "admin_api_lambda" {
 
 data "aws_iam_policy_document" "admin_api_s3" {
   statement {
+    actions   = ["s3:ListBucket"]
+    resources = [aws_s3_bucket.data.arn]
+  }
+
+  statement {
     actions = [
       "s3:GetObject",
       "s3:PutObject",

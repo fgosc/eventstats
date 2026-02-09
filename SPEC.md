@@ -354,6 +354,10 @@ report_id: `605fc0f1` — `items` にイベントアイテム (ぐん肥/のび�
 - イベントの追加・編集・削除
 - イベントごとにクエスト一覧を設定
 - 必要な入力項目: イベント名、期間 (開始・終了)、クエスト (ID・名前・推奨レベル・消費AP)
+- クエスト入力補助: Harvest の `all.json` (`https://fgojunks.max747.org/harvest/contents/quest/all.json`) からクエスト候補を取得
+  - `is_freequest = false` かつ `since` がイベント期間内にあるものをフィルタ
+  - 候補から選択すると、クエスト ID と名前が自動入力される
+  - 推奨レベルと消費 AP は `all.json` に含まれないため手動入力
 
 ### 9.2 データ管理 (除外指定)
 
