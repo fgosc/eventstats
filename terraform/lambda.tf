@@ -20,3 +20,28 @@ resource "aws_lambda_function" "admin_api" {
     }
   }
 }
+
+# --- Aggregator Lambda ---
+
+data "archive_file" "aggregator" {
+  type        = "zip"
+  source_dir  = "${path.module}/../lambda/aggregator"
+  output_path = "${path.module}/.build/aggregator.zip"
+}
+
+resource "aws_lambda_function" "aggregator" {
+  function_name    = "eventstats-aggregator"
+  role             = aws_iam_role.aggregator_lambda.arn
+  handler          = "handler.lambda_handler"
+  runtime          = "python3.12"
+  filename         = data.archive_file.aggregator.output_path
+  source_code_hash = data.archive_file.aggregator.output_base64sha256
+  timeout          = 120
+  memory_size      = 128
+
+  environment {
+    variables = {
+      S3_BUCKET_NAME = aws_s3_bucket.data.bucket
+    }
+  }
+}
