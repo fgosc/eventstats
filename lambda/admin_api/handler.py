@@ -10,9 +10,7 @@ s3 = boto3.client("s3")
 BUCKET = os.environ["S3_BUCKET_NAME"]
 EVENTS_KEY = "events.json"
 EXCLUSIONS_KEY = "exclusions.json"
-HARVEST_ALL_URL = (
-    "https://fgojunks.max747.org/harvest/contents/quest/all.json"
-)
+HARVEST_ALL_URL = "https://fgojunks.max747.org/harvest/contents/quest/all.json"
 
 
 def lambda_handler(event, context):
@@ -35,9 +33,7 @@ def lambda_handler(event, context):
             return get_exclusions(quest_id)
         if path.startswith("/exclusions/") and method == "PUT":
             quest_id = event["pathParameters"]["questId"]
-            return put_exclusions(
-                quest_id, json.loads(event.get("body", "{}"))
-            )
+            return put_exclusions(quest_id, json.loads(event.get("body", "{}")))
         if path == "/harvest/quests" and method == "GET":
             return get_harvest_quests()
         return response(404, {"error": "Not found"})
@@ -111,9 +107,7 @@ def delete_event(event_id):
         return response(404, {"error": "Event not found"})
 
     original_len = len(data["events"])
-    data["events"] = [
-        ev for ev in data["events"] if ev["eventId"] != event_id
-    ]
+    data["events"] = [ev for ev in data["events"] if ev["eventId"] != event_id]
     if len(data["events"]) == original_len:
         return response(404, {"error": "Event not found"})
 
