@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import type { EventData, ExclusionsMap } from "./types";
 import { fetchEvents, fetchExclusions } from "./api";
 import { QuestView } from "./components/QuestView";
+import { ReporterSummary } from "./components/ReporterSummary";
 
 export function App() {
   const [events, setEvents] = useState<EventData[]>([]);
   const [exclusions, setExclusions] = useState<ExclusionsMap>({});
   const [selectedEventId, setSelectedEventId] = useState<string>("");
   const [selectedQuestId, setSelectedQuestId] = useState<string>("");
+  const [showReporterSummary, setShowReporterSummary] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,6 +56,7 @@ export function App() {
             onChange={(e) => {
               const eventId = e.target.value;
               setSelectedEventId(eventId);
+              setShowReporterSummary(false);
               const ev = events.find((ev) => ev.eventId === eventId);
               if (ev && ev.quests.length > 0) {
                 const sorted = [...ev.quests].sort((a, b) => Number(a.level) - Number(b.level));
@@ -79,7 +82,7 @@ export function App() {
             .map((q) => (
               <button
                 key={q.questId}
-                onClick={() => setSelectedQuestId(q.questId)}
+                onClick={() => { setSelectedQuestId(q.questId); setShowReporterSummary(false); }}
                 style={{
                   padding: "6px 16px",
                   marginRight: "4px",
@@ -95,10 +98,33 @@ export function App() {
                 Lv.{q.level} {q.name}
               </button>
             ))}
+          <button
+            onClick={() => { setShowReporterSummary(true); setSelectedQuestId(""); }}
+            style={{
+              padding: "6px 16px",
+              marginRight: "4px",
+              marginBottom: "4px",
+              background: showReporterSummary ? "#1976d2" : "#e0e0e0",
+              color: showReporterSummary ? "#fff" : "#333",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+            }}
+          >
+            報告者サマリ
+          </button>
         </div>
       )}
 
-      {selectedEvent && selectedQuestId && (
+      {selectedEvent && showReporterSummary && (
+        <ReporterSummary
+          eventId={selectedEvent.eventId}
+          quests={selectedEvent.quests}
+          exclusions={exclusions}
+        />
+      )}
+
+      {selectedEvent && selectedQuestId && !showReporterSummary && (
         <QuestView
           eventId={selectedEvent.eventId}
           questId={selectedQuestId}
