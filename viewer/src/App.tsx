@@ -1,8 +1,23 @@
 import { useEffect, useState } from "react";
-import type { EventData, ExclusionsMap } from "./types";
+import type { EventData, EventPeriod, ExclusionsMap } from "./types";
 import { fetchEvents, fetchExclusions } from "./api";
 import { QuestView } from "./components/QuestView";
 import { ReporterSummary } from "./components/ReporterSummary";
+
+function formatDateTime(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleString("ja-JP", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+function formatPeriod(period: EventPeriod): string {
+  return `${formatDateTime(period.start)} 〜 ${formatDateTime(period.end)}`;
+}
 
 export function App() {
   const [events, setEvents] = useState<EventData[]>([]);
@@ -75,6 +90,15 @@ export function App() {
         </label>
       </div>
 
+      {selectedEvent && (
+        <div style={{ marginBottom: "1rem" }}>
+          <h2 style={{ margin: "2rem 0 0.25rem" }}>{selectedEvent.name}</h2>
+          <p style={{ margin: "0 0 1rem", color: "#666" }}>
+            集計期間: {formatPeriod(selectedEvent.period)}
+          </p>
+        </div>
+      )}
+
       {selectedEvent && selectedEvent.quests.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           {[...selectedEvent.quests]
@@ -131,6 +155,7 @@ export function App() {
           exclusions={exclusions[selectedQuestId] ?? []}
         />
       )}
+
     </div>
   );
 }

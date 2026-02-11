@@ -65,12 +65,19 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
           <div style={statsLabelStyle}>合計周回数</div>
           <div style={statsValueStyle}>{totalRuns.toLocaleString()}</div>
         </div>
+        <div style={{ alignSelf: "center", fontSize: "0.75rem", color: "#999" }}>
+          データは2時間ごとに更新されます
+        </div>
       </div>
 
-      <h3>集計結果</h3>
+      <h3 style={{ marginBottom: "0.25rem" }}>集計結果</h3>
       <SummaryTable stats={stats} />
 
-      <h3>報告一覧</h3>
+      <h3 style={{ marginBottom: "0.25rem" }}>報告一覧</h3>
+      <p style={{ margin: "0 0 0.5rem", fontSize: "0.75rem", color: "#666" }}>
+        <span style={{ background: "#fde8e8", padding: "1px 6px", marginRight: "4px" }}>色付きセル</span>
+        統計的に外れ値の可能性があるドロップ数（ホバーで z-score 表示）
+      </p>
       <ReportTable
         reports={data.reports}
         exclusions={exclusions}
