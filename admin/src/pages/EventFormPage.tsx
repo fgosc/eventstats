@@ -17,6 +17,8 @@ export function EventFormPage() {
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [quests, setQuests] = useState<Quest[]>([]);
+  const [eventItems, setEventItems] = useState<string[]>([]);
+  const [newItem, setNewItem] = useState("");
   const [loading, setLoading] = useState(isEdit);
   const [error, setError] = useState("");
 
@@ -37,6 +39,7 @@ export function EventFormPage() {
         setStart(toLocalInput(ev.period.start));
         setEnd(toLocalInput(ev.period.end));
         setQuests([...ev.quests].sort(sortByLevel));
+        setEventItems(ev.eventItems ?? []);
       })
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Failed to load"),
@@ -55,6 +58,7 @@ export function EventFormPage() {
         end: toISO(end),
       },
       quests,
+      eventItems,
     };
 
     try {
@@ -67,6 +71,18 @@ export function EventFormPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     }
+  };
+
+  const addEventItem = () => {
+    const trimmed = newItem.trim();
+    if (!trimmed) return;
+    if (eventItems.includes(trimmed)) return;
+    setEventItems([...eventItems, trimmed]);
+    setNewItem("");
+  };
+
+  const removeEventItem = (index: number) => {
+    setEventItems(eventItems.filter((_, i) => i !== index));
   };
 
   const addQuest = () => {
@@ -171,6 +187,64 @@ export function EventFormPage() {
               required
             />
           </label>
+        </div>
+
+        <h2>イベントアイテム</h2>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
+            <input
+              type="text"
+              value={newItem}
+              onChange={(e) => setNewItem(e.target.value)}
+              placeholder="アイテム名（例: ぐん肥）"
+              style={{ flex: 1 }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addEventItem();
+                }
+              }}
+            />
+            <button type="button" onClick={addEventItem}>
+              追加
+            </button>
+          </div>
+          {eventItems.map((item, i) => (
+            <span
+              key={i}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+                border: "1px solid #ccc",
+                borderRadius: 4,
+                padding: "2px 8px",
+                marginRight: 4,
+                marginBottom: 4,
+              }}
+            >
+              {item}
+              <button
+                type="button"
+                onClick={() => removeEventItem(i)}
+                style={{
+                  border: "none",
+                  background: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  fontSize: 14,
+                  color: "#888",
+                }}
+              >
+                x
+              </button>
+            </span>
+          ))}
+          {eventItems.length === 0 && (
+            <p style={{ fontSize: 12, color: "#666", margin: "4px 0 0" }}>
+              未設定の場合、集計時に報告データから自動検出されます。
+            </p>
+          )}
         </div>
 
         <h2>クエスト一覧</h2>

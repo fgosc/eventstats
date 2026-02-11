@@ -15,6 +15,9 @@ node_modules/
 # admin build
 admin/dist/
 
+# viewer build
+viewer/dist/
+
 # environment variables
 .env
 .env.local

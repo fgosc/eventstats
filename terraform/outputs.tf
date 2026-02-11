@@ -17,3 +17,8 @@ output "s3_bucket_name" {
   description = "S3 bucket name"
   value       = aws_s3_bucket.data.bucket
 }
+
+output "cloudfront_data_url" {
+  description = "CloudFront URL for public data"
+  value       = "https://${aws_cloudfront_distribution.data.domain_name}"
+}

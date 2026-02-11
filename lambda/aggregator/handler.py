@@ -170,7 +170,7 @@ def fetch_harvest_reports(quest_id: str) -> list[dict]:
         return json.loads(resp.read().decode("utf-8"))
 
 
-def process_quest(event_id: str, quest: dict) -> None:
+def process_quest(event_id: str, quest: dict, event_items: set[str]) -> None:
     """クエスト1件を処理: 取得・変換・中間 JSON 出力。"""
     quest_id = quest["questId"]
     logger.info("Processing quest %s (%s)", quest_id, quest["name"])
@@ -178,8 +178,11 @@ def process_quest(event_id: str, quest: dict) -> None:
     reports = fetch_harvest_reports(quest_id)
     logger.info("Fetched %d reports for quest %s", len(reports), quest_id)
 
-    event_items = detect_event_items(reports)
-    logger.info("Detected event items: %s", event_items)
+    if not event_items:
+        event_items = detect_event_items(reports)
+        logger.info("Detected event items: %s", event_items)
+    else:
+        logger.info("Using configured event items: %s", event_items)
 
     transformed_reports = []
     for report in reports:
@@ -243,8 +246,9 @@ def lambda_handler(event: Any, context: Any) -> dict[str, int]:
     total_quests = 0
     for ev in active_events:
         event_id = ev["eventId"]
+        event_items = set(ev.get("eventItems", []))
         for quest in ev.get("quests", []):
-            process_quest(event_id, quest)
+            process_quest(event_id, quest, event_items)
             total_quests += 1
 
     logger.info("Processed %d quest(s) total", total_quests)

@@ -15,6 +15,7 @@ export interface EventData {
   name: string;
   period: EventPeriod;
   quests: Quest[];
+  eventItems: string[];
 }
 
 export interface EventsResponse {
