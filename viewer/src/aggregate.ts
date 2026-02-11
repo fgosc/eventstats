@@ -106,8 +106,9 @@ export function calcOutlierStats(
 }
 
 const OUTLIER_Z_THRESHOLD = 3.0;
-const MIN_SAMPLE_COUNT = 10;
-const MIN_DROP_RATE_FOR_NORMAL = 0.5;
+const MIN_SAMPLE_COUNT = 5;
+const MIN_RUNCOUNT = 20;
+const MIN_DROP_RATE_FOR_NORMAL = 0.2;
 
 export function isOutlier(
   value: number | null,
@@ -116,6 +117,7 @@ export function isOutlier(
   dropRate: number,
 ): number | null {
   if (value == null) return null;
+  if (runcount < MIN_RUNCOUNT) return null;
   if (outlierStats.sampleCount < MIN_SAMPLE_COUNT) return null;
   if (outlierStats.stdDev < 1e-9) return null;
 
