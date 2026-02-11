@@ -27,7 +27,8 @@ export function App() {
         if (target) {
           setSelectedEventId(target.eventId);
           if (target.quests.length > 0) {
-            setSelectedQuestId(target.quests[0].questId);
+            const sorted = [...target.quests].sort((a, b) => Number(a.level) - Number(b.level));
+            setSelectedQuestId(sorted[sorted.length - 1].questId);
           }
         }
       })
@@ -43,7 +44,7 @@ export function App() {
 
   return (
     <div style={{ padding: "1rem", fontFamily: "sans-serif" }}>
-      <h1>eventstats</h1>
+      <h1>FGO EventStats</h1>
 
       <div style={{ marginBottom: "1rem" }}>
         <label>
@@ -55,7 +56,8 @@ export function App() {
               setSelectedEventId(eventId);
               const ev = events.find((ev) => ev.eventId === eventId);
               if (ev && ev.quests.length > 0) {
-                setSelectedQuestId(ev.quests[0].questId);
+                const sorted = [...ev.quests].sort((a, b) => Number(a.level) - Number(b.level));
+                setSelectedQuestId(sorted[sorted.length - 1].questId);
               } else {
                 setSelectedQuestId("");
               }
@@ -72,25 +74,27 @@ export function App() {
 
       {selectedEvent && selectedEvent.quests.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
-          {selectedEvent.quests.map((q) => (
-            <button
-              key={q.questId}
-              onClick={() => setSelectedQuestId(q.questId)}
-              style={{
-                padding: "6px 16px",
-                marginRight: "4px",
-                marginBottom: "4px",
-                background:
-                  q.questId === selectedQuestId ? "#1976d2" : "#e0e0e0",
-                color: q.questId === selectedQuestId ? "#fff" : "#333",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
-            >
-              {q.name}
-            </button>
-          ))}
+          {[...selectedEvent.quests]
+            .sort((a, b) => Number(a.level) - Number(b.level))
+            .map((q) => (
+              <button
+                key={q.questId}
+                onClick={() => setSelectedQuestId(q.questId)}
+                style={{
+                  padding: "6px 16px",
+                  marginRight: "4px",
+                  marginBottom: "4px",
+                  background:
+                    q.questId === selectedQuestId ? "#1976d2" : "#e0e0e0",
+                  color: q.questId === selectedQuestId ? "#fff" : "#333",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                }}
+              >
+                Lv.{q.level} {q.name}
+              </button>
+            ))}
         </div>
       )}
 

@@ -46,18 +46,30 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
 
   return (
     <div>
-      <h3>
+      <h2>
         {data.quest.name} (Lv.{data.quest.level} / AP {data.quest.ap})
-      </h3>
-      <p>
-        更新: {new Date(data.lastUpdated).toLocaleString("ja-JP")} / 有効報告数:{" "}
-        {validCount} / 合計周回数: {totalRuns}
-      </p>
+      </h2>
+      <div style={statsBarStyle}>
+        <div style={statsCardStyle}>
+          <div style={statsLabelStyle}>更新</div>
+          <div style={statsValueStyle}>
+            {new Date(data.lastUpdated).toLocaleString("ja-JP")}
+          </div>
+        </div>
+        <div style={statsCardStyle}>
+          <div style={statsLabelStyle}>有効報告数</div>
+          <div style={statsValueStyle}>{validCount}</div>
+        </div>
+        <div style={statsCardStyle}>
+          <div style={statsLabelStyle}>合計周回数</div>
+          <div style={statsValueStyle}>{totalRuns.toLocaleString()}</div>
+        </div>
+      </div>
 
-      <h4>集計結果</h4>
+      <h3>集計結果</h3>
       <SummaryTable stats={stats} />
 
-      <h4>報告一覧</h4>
+      <h3>報告一覧</h3>
       <ReportTable
         reports={data.reports}
         exclusions={exclusions}
@@ -66,3 +78,28 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
     </div>
   );
 }
+
+const statsBarStyle: React.CSSProperties = {
+  display: "flex",
+  gap: "12px",
+  marginBottom: "1.5rem",
+  flexWrap: "wrap",
+};
+
+const statsCardStyle: React.CSSProperties = {
+  border: "1px solid #ccc",
+  borderRadius: "6px",
+  padding: "8px 16px",
+  background: "#f9f9f9",
+};
+
+const statsLabelStyle: React.CSSProperties = {
+  fontSize: "0.75rem",
+  color: "#666",
+  marginBottom: "2px",
+};
+
+const statsValueStyle: React.CSSProperties = {
+  fontSize: "1.1rem",
+  fontWeight: "bold",
+};

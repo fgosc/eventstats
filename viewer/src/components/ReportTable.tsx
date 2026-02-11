@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Report, Exclusion } from "../types";
 
 interface Props {
@@ -6,11 +7,86 @@ interface Props {
   itemNames: string[];
 }
 
+type SortKey = "reporter" | "runcount" | "timestamp";
+type SortDir = "asc" | "desc";
+type SortState = { key: SortKey; dir: SortDir } | null;
+
+const RE_FGOSCCNT = /https:\/\/fgojunks\.max747\.org\/fgosccnt\/results\/\S+/;
+const RE_MODIFIER = /(\((?:x|\+)\d+\))$/;
+
+function formatNote(note: string): React.ReactNode {
+  const m = RE_FGOSCCNT.exec(note);
+  if (!m) return note;
+  const before = note.slice(0, m.index);
+  const after = note.slice(m.index + m[0].length);
+  return (
+    <>
+      {before}
+      <a href={m[0]} target="_blank" rel="noopener noreferrer">fgosccnt</a>
+      {after}
+    </>
+  );
+}
+
+function formatItemHeader(name: string): React.ReactNode {
+  const m = RE_MODIFIER.exec(name);
+  if (!m) return name;
+  const base = name.slice(0, m.index);
+  return (
+    <>
+      {base}
+      <br />
+      {m[1]}
+    </>
+  );
+}
+
+function sortIndicator(sort: SortState, key: SortKey): string {
+  if (!sort || sort.key !== key) return "";
+  return sort.dir === "asc" ? " ▲" : " ▼";
+}
+
+function getReporterName(r: Report): string {
+  return r.reporterName || r.reporter || "匿名";
+}
+
+function sortReports(reports: Report[], sort: SortState): Report[] {
+  if (!sort) return reports;
+  const { key, dir } = sort;
+  const sorted = [...reports].sort((a, b) => {
+    let cmp = 0;
+    switch (key) {
+      case "reporter":
+        cmp = getReporterName(a).localeCompare(getReporterName(b));
+        break;
+      case "runcount":
+        cmp = a.runcount - b.runcount;
+        break;
+      case "timestamp":
+        cmp = a.timestamp.localeCompare(b.timestamp);
+        break;
+    }
+    return dir === "asc" ? cmp : -cmp;
+  });
+  return sorted;
+}
+
 export function ReportTable({ reports, exclusions, itemNames }: Props) {
+  const [sort, setSort] = useState<SortState>(null);
   const excludedIds = new Set(exclusions.map((e) => e.reportId));
   const exclusionMap = new Map(exclusions.map((e) => [e.reportId, e.reason]));
 
   if (reports.length === 0) return <p>報告なし</p>;
+
+  const toggleSort = (key: SortKey) => {
+    setSort((prev) => {
+      if (!prev || prev.key !== key) return { key, dir: "asc" };
+      if (prev.dir === "asc") return { key, dir: "desc" };
+      return null;
+    });
+  };
+
+  const sorted = sortReports(reports, sort);
 
   return (
     <div style={{ overflowX: "auto" }}>
@@ -18,19 +94,25 @@ export function ReportTable({ reports, exclusions, itemNames }: Props) {
         <thead>
           <tr>
             <th style={thStyle}>状態</th>
-            <th style={thStyle}>報告者</th>
-            <th style={thStyle}>周回数</th>
+            <th style={thStyleSortable} onClick={() => toggleSort("reporter")}>
+              報告者{sortIndicator(sort, "reporter")}
+            </th>
+            <th style={thStyleSortable} onClick={() => toggleSort("runcount")}>
+              周回数{sortIndicator(sort, "runcount")}
+            </th>
             {itemNames.map((name) => (
-              <th key={name} style={thStyle}>
-                {name}
+              <th key={name} style={thStyleItem}>
+                {formatItemHeader(name)}
               </th>
             ))}
-            <th style={thStyle}>日時</th>
+            <th style={thStyleSortable} onClick={() => toggleSort("timestamp")}>
+              日時{sortIndicator(sort, "timestamp")}
+            </th>
             <th style={thStyle}>メモ</th>
           </tr>
         </thead>
         <tbody>
-          {reports.map((r) => {
+          {sorted.map((r) => {
             const excluded = excludedIds.has(r.id);
             const rowStyle: React.CSSProperties = excluded
               ? { opacity: 0.5, textDecoration: "line-through" }
@@ -41,7 +123,7 @@ export function ReportTable({ reports, exclusions, itemNames }: Props) {
                 <td style={tdStyle}>
                   {excluded ? "除外" : "有効"}
                 </td>
-                <td style={tdStyle}>
+                <td style={tdStyleReporter} title={r.reporterName || r.reporter || "匿名"}>
                   {r.reporterName || r.reporter || "匿名"}
                 </td>
                 <td style={tdStyleRight}>{r.runcount}</td>
@@ -57,7 +139,7 @@ export function ReportTable({ reports, exclusions, itemNames }: Props) {
                   {new Date(r.timestamp).toLocaleString("ja-JP")}
                 </td>
                 <td style={{ ...tdStyle, maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {r.note}
+                  {formatNote(r.note)}
                 </td>
               </tr>
             );
@@ -75,9 +157,27 @@ const thStyle: React.CSSProperties = {
   textAlign: "left",
 };
 
+const thStyleSortable: React.CSSProperties = {
+  ...thStyle,
+  cursor: "pointer",
+  userSelect: "none",
+};
+
+const thStyleItem: React.CSSProperties = {
+  ...thStyle,
+  whiteSpace: "normal",
+};
+
 const tdStyle: React.CSSProperties = {
   border: "1px solid #ccc",
   padding: "6px 12px",
+};
+
+const tdStyleReporter: React.CSSProperties = {
+  ...tdStyle,
+  maxWidth: "15em",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 };
 
 const tdStyleRight: React.CSSProperties = {

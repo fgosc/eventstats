@@ -51,4 +51,6 @@ export interface ItemStats {
   totalDrops: number;
   totalRuns: number;
   dropRate: number;
+  ciLower: number;
+  ciUpper: number;
 }

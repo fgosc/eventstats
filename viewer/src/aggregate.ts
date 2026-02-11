@@ -1,5 +1,23 @@
 import type { Report, Exclusion, ItemStats } from "./types";
 
+const Z = 1.96; // 95% confidence
+
+function wilsonCI(
+  successes: number,
+  n: number,
+): { lower: number; upper: number } {
+  if (n === 0) return { lower: 0, upper: 0 };
+  const p = successes / n;
+  const z2 = Z * Z;
+  const denom = 1 + z2 / n;
+  const centre = (p + z2 / (2 * n)) / denom;
+  const margin = (Z / denom) * Math.sqrt(p * (1 - p) / n + z2 / (4 * n * n));
+  return {
+    lower: Math.max(0, centre - margin),
+    upper: Math.min(1, centre + margin),
+  };
+}
+
 export function aggregate(
   reports: Report[],
   exclusions: Exclusion[],
@@ -26,11 +44,14 @@ export function aggregate(
       totalRuns += report.runcount;
     }
 
+    const { lower, upper } = wilsonCI(totalDrops, totalRuns);
     stats.push({
       itemName,
       totalDrops,
       totalRuns,
       dropRate: totalRuns > 0 ? totalDrops / totalRuns : 0,
+      ciLower: lower,
+      ciUpper: upper,
     });
   }
 
