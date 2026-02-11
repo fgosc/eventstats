@@ -1,10 +1,11 @@
-name: Deploy viewer to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
     branches: [main]
     paths:
       - "viewer/**"
+      - "admin/**"
   workflow_dispatch:
 
 permissions:
@@ -20,9 +21,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: github-pages
-    defaults:
-      run:
-        working-directory: viewer
     steps:
       - uses: actions/checkout@v4
 
@@ -30,19 +28,34 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: viewer/package-lock.json
+          cache-dependency-path: |
+            viewer/package-lock.json
+            admin/package-lock.json
 
-      - run: npm ci
-
-      - run: npm run build
+      - name: Build viewer
+        working-directory: viewer
+        run: npm ci && npm run build
         env:
           VITE_DATA_URL: ${{ vars.VITE_DATA_URL }}
+
+      - name: Build admin
+        working-directory: admin
+        run: npm ci && npm run build
+        env:
+          VITE_COGNITO_USER_POOL_ID: ${{ vars.VITE_COGNITO_USER_POOL_ID }}
+          VITE_COGNITO_CLIENT_ID: ${{ vars.VITE_COGNITO_CLIENT_ID }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+      - name: Combine artifacts
+        run: |
+          mv viewer/dist _site
+          cp -r admin/dist _site/admin
 
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: viewer/dist
+          path: _site
 
   deploy:
     needs: build

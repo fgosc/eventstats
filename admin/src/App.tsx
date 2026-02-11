@@ -53,7 +53,7 @@ function AppRoutes() {
 
 export function App() {
   return (
-    <BrowserRouter basename="/admin">
+    <BrowserRouter basename="/eventstats/admin">
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
