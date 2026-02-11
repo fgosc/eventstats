@@ -25,6 +25,7 @@ export function LoginPage() {
           <label>
             ユーザー名
             <input
+              name="username"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -37,6 +38,7 @@ export function LoginPage() {
           <label>
             パスワード
             <input
+              name="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
