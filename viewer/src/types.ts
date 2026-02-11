@@ -54,3 +54,10 @@ export interface ItemStats {
   ciLower: number;
   ciUpper: number;
 }
+
+export interface ItemOutlierStats {
+  itemName: string;
+  mean: number;
+  stdDev: number;
+  sampleCount: number;
+}

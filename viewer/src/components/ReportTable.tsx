@@ -1,10 +1,13 @@
 import { useState } from "react";
-import type { Report, Exclusion } from "../types";
+import type { Report, Exclusion, ItemOutlierStats, ItemStats } from "../types";
+import { isOutlier } from "../aggregate";
 
 interface Props {
   reports: Report[];
   exclusions: Exclusion[];
   itemNames: string[];
+  outlierStats: ItemOutlierStats[];
+  stats: ItemStats[];
 }
 
 type SortKey = "reporter" | "runcount" | "timestamp";
@@ -73,10 +76,13 @@ function sortReports(reports: Report[], sort: SortState): Report[] {
   return sorted;
 }
 
-export function ReportTable({ reports, exclusions, itemNames }: Props) {
+export function ReportTable({ reports, exclusions, itemNames, outlierStats, stats }: Props) {
   const [sort, setSort] = useState<SortState>(null);
   const excludedIds = new Set(exclusions.map((e) => e.reportId));
   const exclusionMap = new Map(exclusions.map((e) => [e.reportId, e.reason]));
+
+  const outlierMap = new Map(outlierStats.map((s) => [s.itemName, s]));
+  const statsMap = new Map(stats.map((s) => [s.itemName, s]));
 
   if (reports.length === 0) return <p>報告なし</p>;
 
@@ -133,8 +139,20 @@ export function ReportTable({ reports, exclusions, itemNames }: Props) {
                 <td style={tdStyleRight}>{r.runcount}</td>
                 {itemNames.map((name) => {
                   const value = r.items[name];
+                  const oStats = outlierMap.get(name);
+                  const iStats = statsMap.get(name);
+                  const zScore = !excluded && oStats && iStats
+                    ? isOutlier(value, r.runcount, oStats, iStats.dropRate)
+                    : null;
+                  const cellStyle: React.CSSProperties = zScore != null
+                    ? { ...tdStyleRight, background: "#fde8e8" }
+                    : tdStyleRight;
                   return (
-                    <td key={name} style={tdStyleRight}>
+                    <td
+                      key={name}
+                      style={cellStyle}
+                      title={zScore != null ? `z-score: ${zScore.toFixed(2)}` : undefined}
+                    >
                       {value == null ? "-" : value}
                     </td>
                   );

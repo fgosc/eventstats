@@ -1,4 +1,4 @@
-import type { Report, Exclusion, ItemStats } from "./types";
+import type { Report, Exclusion, ItemStats, ItemOutlierStats } from "./types";
 
 const Z = 1.96; // 95% confidence
 
@@ -56,4 +56,76 @@ export function aggregate(
   }
 
   return stats;
+}
+
+const RE_EVENT_ITEM = /\(x(\d+)\)$/;
+const RE_POINT = /^ポイント\(\+(\d+)\)$/;
+const RE_QP = /^QP\(\+(\d+)\)$/;
+
+function isAlwaysTargetItem(itemName: string): boolean {
+  return RE_EVENT_ITEM.test(itemName) || RE_POINT.test(itemName) || RE_QP.test(itemName);
+}
+
+export function calcOutlierStats(
+  reports: Report[],
+  exclusions: Exclusion[],
+): ItemOutlierStats[] {
+  const excludedIds = new Set(exclusions.map((e) => e.reportId));
+  const validReports = reports.filter((r) => !excludedIds.has(r.id));
+
+  const itemNames = new Set<string>();
+  for (const report of validReports) {
+    for (const key of Object.keys(report.items)) {
+      itemNames.add(key);
+    }
+  }
+
+  const result: ItemOutlierStats[] = [];
+  for (const itemName of itemNames) {
+    const perRun: number[] = [];
+    for (const report of validReports) {
+      const value = report.items[itemName];
+      if (value == null) continue;
+      perRun.push(value / report.runcount);
+    }
+
+    const sampleCount = perRun.length;
+    if (sampleCount === 0) {
+      result.push({ itemName, mean: 0, stdDev: 0, sampleCount: 0 });
+      continue;
+    }
+
+    const mean = perRun.reduce((a, b) => a + b, 0) / sampleCount;
+    const variance = perRun.reduce((sum, v) => sum + (v - mean) ** 2, 0) / sampleCount;
+    const stdDev = Math.sqrt(variance);
+
+    result.push({ itemName, mean, stdDev, sampleCount });
+  }
+
+  return result;
+}
+
+const OUTLIER_Z_THRESHOLD = 3.0;
+const MIN_SAMPLE_COUNT = 10;
+const MIN_DROP_RATE_FOR_NORMAL = 0.5;
+
+export function isOutlier(
+  value: number | null,
+  runcount: number,
+  outlierStats: ItemOutlierStats,
+  dropRate: number,
+): number | null {
+  if (value == null) return null;
+  if (outlierStats.sampleCount < MIN_SAMPLE_COUNT) return null;
+  if (outlierStats.stdDev < 1e-9) return null;
+
+  if (!isAlwaysTargetItem(outlierStats.itemName) && dropRate < MIN_DROP_RATE_FOR_NORMAL) {
+    return null;
+  }
+
+  const perRun = value / runcount;
+  const zScore = (perRun - outlierStats.mean) / outlierStats.stdDev;
+
+  if (Math.abs(zScore) > OUTLIER_Z_THRESHOLD) return zScore;
+  return null;
 }

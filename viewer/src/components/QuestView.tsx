@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { QuestData, Exclusion } from "../types";
 import { fetchQuestData } from "../api";
-import { aggregate } from "../aggregate";
+import { aggregate, calcOutlierStats } from "../aggregate";
 import { SummaryTable } from "./SummaryTable";
 import { ReportTable } from "./ReportTable";
 
@@ -30,6 +30,7 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
   if (!data) return null;
 
   const stats = aggregate(data.reports, exclusions);
+  const outlierStats = calcOutlierStats(data.reports, exclusions);
   const excludedIds = new Set(exclusions.map((e) => e.reportId));
   const totalRuns = data.reports
     .filter((r) => !excludedIds.has(r.id))
@@ -74,6 +75,8 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
         reports={data.reports}
         exclusions={exclusions}
         itemNames={sortedItemNames}
+        outlierStats={outlierStats}
+        stats={stats}
       />
     </div>
   );
