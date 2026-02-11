@@ -126,7 +126,9 @@ export function ReportTable({ reports, exclusions, itemNames }: Props) {
                   {excluded ? "除外" : "有効"}
                 </td>
                 <td style={tdStyleReporter} title={r.reporterName || r.reporter || "匿名"}>
-                  {r.reporterName || r.reporter || "匿名"}
+                  <a href={`https://fgodrop.max747.org/reports/${r.id}`} target="_blank" rel="noopener noreferrer">
+                    {r.reporterName || r.reporter || "匿名"}
+                  </a>
                 </td>
                 <td style={tdStyleRight}>{r.runcount}</td>
                 {itemNames.map((name) => {

@@ -9,6 +9,7 @@ interface Props {
 }
 
 interface ReportDetail {
+  reportId: string;
   questName: string;
   runcount: number;
   items: Record<string, number | null>;
@@ -72,6 +73,7 @@ function aggregateReporters(
       entry.totalRuns += r.runcount;
       entry.sampleCount += samples;
       entry.details.push({
+        reportId: r.id,
         questName: qd.quest.name,
         runcount: r.runcount,
         items: r.items,
@@ -132,7 +134,11 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
       <tbody>
         {sorted.map((d, i) => (
           <tr key={i}>
-            <td style={tdStyleDetail}>{d.questName}</td>
+            <td style={tdStyleDetail}>
+              <a href={`https://fgodrop.max747.org/reports/${d.reportId}`} target="_blank" rel="noopener noreferrer">
+                {d.questName}
+              </a>
+            </td>
             <td style={tdStyleDetailRight}>{d.runcount.toLocaleString()}</td>
             {itemCols.map((name) => {
               const value = d.items[name];
