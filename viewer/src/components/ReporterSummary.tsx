@@ -92,8 +92,10 @@ type SortState = { key: SortKey; dir: SortDir };
 const DEFAULT_SORT: SortState = { key: "sampleCount", dir: "desc" };
 
 function sortIndicator(sort: SortState, key: SortKey): string {
-  if (sort.key !== key) return "";
-  return sort.dir === "asc" ? " ▲" : " ▼";
+  if (sort.key === key) {
+    return sort.dir === "asc" ? " ▲" : " ▼";
+  }
+  return " △";
 }
 
 function sortRows(rows: ReporterRow[], sort: SortState): ReporterRow[] {
@@ -212,13 +214,13 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
               <th style={thStyle}>No</th>
               <th style={thStyle}>報告者</th>
               <th style={thStyle}>X ID</th>
-              <th style={thStyleSortable} onClick={() => toggleSort("reportCount")}>
+              <th style={sort.key === "reportCount" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("reportCount")}>
                 報告数{sortIndicator(sort, "reportCount")}
               </th>
-              <th style={thStyleSortable} onClick={() => toggleSort("totalRuns")}>
+              <th style={sort.key === "totalRuns" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("totalRuns")}>
                 合計周回数{sortIndicator(sort, "totalRuns")}
               </th>
-              <th style={thStyleSortable} onClick={() => toggleSort("sampleCount")}>
+              <th style={sort.key === "sampleCount" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("sampleCount")}>
                 サンプル数{sortIndicator(sort, "sampleCount")}
               </th>
             </tr>
@@ -319,6 +321,11 @@ const thStyleSortable: React.CSSProperties = {
   ...thStyle,
   cursor: "pointer",
   userSelect: "none",
+};
+
+const thStyleSortActive: React.CSSProperties = {
+  ...thStyleSortable,
+  background: "#e3edf7",
 };
 
 const tdStyle: React.CSSProperties = {

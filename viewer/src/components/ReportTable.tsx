@@ -42,8 +42,10 @@ function formatItemHeader(name: string): React.ReactNode {
 }
 
 function sortIndicator(sort: SortState, key: SortKey): string {
-  if (!sort || sort.key !== key) return "";
-  return sort.dir === "asc" ? " ▲" : " ▼";
+  if (sort && sort.key === key) {
+    return sort.dir === "asc" ? " ▲" : " ▼";
+  }
+  return " △";
 }
 
 function getReporterName(r: Report): string {
@@ -94,10 +96,10 @@ export function ReportTable({ reports, exclusions, itemNames }: Props) {
         <thead>
           <tr>
             <th style={thStyle}>状態</th>
-            <th style={thStyleSortable} onClick={() => toggleSort("reporter")}>
+            <th style={sort?.key === "reporter" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("reporter")}>
               報告者{sortIndicator(sort, "reporter")}
             </th>
-            <th style={thStyleSortable} onClick={() => toggleSort("runcount")}>
+            <th style={sort?.key === "runcount" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("runcount")}>
               周回数{sortIndicator(sort, "runcount")}
             </th>
             {itemNames.map((name) => (
@@ -105,7 +107,7 @@ export function ReportTable({ reports, exclusions, itemNames }: Props) {
                 {formatItemHeader(name)}
               </th>
             ))}
-            <th style={thStyleSortable} onClick={() => toggleSort("timestamp")}>
+            <th style={sort?.key === "timestamp" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("timestamp")}>
               日時{sortIndicator(sort, "timestamp")}
             </th>
             <th style={thStyle}>メモ</th>
@@ -161,6 +163,11 @@ const thStyleSortable: React.CSSProperties = {
   ...thStyle,
   cursor: "pointer",
   userSelect: "none",
+};
+
+const thStyleSortActive: React.CSSProperties = {
+  ...thStyleSortable,
+  background: "#e3edf7",
 };
 
 const thStyleItem: React.CSSProperties = {
