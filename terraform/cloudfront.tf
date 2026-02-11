@@ -43,8 +43,8 @@ resource "aws_cloudfront_distribution" "data" {
     viewer_protocol_policy     = "redirect-to-https"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.cors.id
 
-    default_ttl = 300
-    max_ttl     = 3600
+    default_ttl = 0
+    max_ttl     = 0
     min_ttl     = 0
 
     forwarded_values {
