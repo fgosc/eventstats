@@ -13,5 +13,8 @@ variable "s3_bucket_name" {
 variable "admin_cors_origins" {
   description = "Allowed CORS origins for admin UI"
   type        = list(string)
-  default     = ["http://localhost:5173"]
+  default     = [
+    "http://localhost:5173",
+    "https://fgosc.github.io",
+  ]
 }
