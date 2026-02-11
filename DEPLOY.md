@@ -11,7 +11,7 @@
 ### 初回セットアップ
 
 1. GitHub リポジトリ Settings → Pages → Source を **"GitHub Actions"** に変更
-2. Settings → Secrets and variables → Actions → Variables に以下を追加:
+2. Settings → Environments → **github-pages** → Environment variables に以下を追加:
    - `VITE_DATA_URL` = `https://d393y4hhawhz2i.cloudfront.net`
 
 ## admin
