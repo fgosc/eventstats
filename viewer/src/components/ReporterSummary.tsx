@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import type { Quest, QuestData, ExclusionsMap, Report } from "../types";
+import type { Quest, QuestData, ExclusionsMap } from "../types";
 import { fetchQuestData } from "../api";
 
 interface Props {
@@ -13,7 +13,6 @@ interface ReportDetail {
   questName: string;
   runcount: number;
   items: Record<string, number | null>;
-  sampleCount: number;
   timestamp: string;
 }
 
@@ -22,27 +21,7 @@ interface ReporterRow {
   xId: string;
   reportCount: number;
   totalRuns: number;
-  sampleCount: number;
   details: ReportDetail[];
-}
-
-const RE_BOX_COUNT = /\(x\d+\)$/;
-const RE_POINT_BONUS = /^ポイント\(\+\d+\)$/;
-const RE_QP_BONUS = /^QP\(\+\d+\)$/;
-
-function countSamples(report: Report): number {
-  let count = 0;
-  for (const [key, value] of Object.entries(report.items)) {
-    if (value == null) continue;
-    if (RE_BOX_COUNT.test(key) || RE_POINT_BONUS.test(key) || RE_QP_BONUS.test(key)) {
-      // イベントアイテム・ポイント・QP は枠数（値そのまま）
-      count += value;
-    } else {
-      // 素材ドロップ数
-      count += value;
-    }
-  }
-  return count;
 }
 
 function aggregateReporters(
@@ -65,19 +44,15 @@ function aggregateReporters(
         xId: r.reporter || "",
         reportCount: 0,
         totalRuns: 0,
-        sampleCount: 0,
         details: [],
       };
-      const samples = countSamples(r);
       entry.reportCount += 1;
       entry.totalRuns += r.runcount;
-      entry.sampleCount += samples;
       entry.details.push({
         reportId: r.id,
         questName: qd.quest.name,
         runcount: r.runcount,
         items: r.items,
-        sampleCount: samples,
         timestamp: r.timestamp,
       });
       map.set(name, entry);
@@ -87,11 +62,11 @@ function aggregateReporters(
   return [...map.values()];
 }
 
-type SortKey = "reportCount" | "totalRuns" | "sampleCount";
+type SortKey = "reportCount" | "totalRuns";
 type SortDir = "asc" | "desc";
 type SortState = { key: SortKey; dir: SortDir };
 
-const DEFAULT_SORT: SortState = { key: "sampleCount", dir: "desc" };
+const DEFAULT_SORT: SortState = { key: "totalRuns", dir: "desc" };
 
 function sortIndicator(sort: SortState, key: SortKey): string {
   if (sort.key === key) {
@@ -127,7 +102,6 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
           {itemCols.map((name) => (
             <th key={name} style={thStyleDetail}>{name}</th>
           ))}
-          <th style={thStyleDetail}>サンプル数</th>
           <th style={thStyleDetail}>日時</th>
         </tr>
       </thead>
@@ -148,7 +122,6 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
                 </td>
               );
             })}
-            <td style={tdStyleDetailRight}>{d.sampleCount.toLocaleString()}</td>
             <td style={tdStyleDetail}>
               {new Date(d.timestamp).toLocaleString("ja-JP")}
             </td>
@@ -226,9 +199,6 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
               <th style={sort.key === "totalRuns" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("totalRuns")}>
                 合計周回数{sortIndicator(sort, "totalRuns")}
               </th>
-              <th style={sort.key === "sampleCount" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("sampleCount")}>
-                サンプル数{sortIndicator(sort, "sampleCount")}
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -267,11 +237,10 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
                     </td>
                     <td style={tdStyleRight}>{r.reportCount.toLocaleString()}</td>
                     <td style={tdStyleRight}>{r.totalRuns.toLocaleString()}</td>
-                    <td style={tdStyleRight}>{r.sampleCount.toLocaleString()}</td>
                   </tr>
                   {isExpanded && (
                     <tr>
-                      <td colSpan={7} style={detailCellStyle}>
+                      <td colSpan={6} style={detailCellStyle}>
                         <DetailTable details={r.details} />
                       </td>
                     </tr>
