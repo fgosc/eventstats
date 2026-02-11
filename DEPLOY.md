@@ -1,35 +1,18 @@
 # デプロイ手順
 
-## viewer
+## viewer (GitHub Pages)
 
-### 1. ビルド
+`viewer/` 配下の変更が main に push されると GitHub Actions で自動デプロイされる。
 
-```bash
-cd viewer
-npm run build
-```
+- URL: `https://fgosc.github.io/eventstats/`
+- ワークフロー: `.github/workflows/deploy-viewer.yml`
+- 手動実行: Actions タブから "Deploy viewer to GitHub Pages" を Run workflow
 
-`dist/` ディレクトリにビルド成果物が出力される。
+### 初回セットアップ
 
-### 2. S3 にアップロード
-
-```bash
-aws s3 cp viewer/dist/ s3://eventstats-data/eventstats/ --recursive --profile fgoharvest
-```
-
-- `vite.config.ts` の `base: "/eventstats/"` に対応するパスにアップロード
-- データ取得先 URL は `.env.local` の `VITE_DATA_URL` でビルド時に埋め込まれる
-
-### 3. CloudFront キャッシュ無効化（必要に応じて）
-
-```bash
-aws cloudfront create-invalidation \
-  --distribution-id d393y4hhawhz2i \
-  --paths "/eventstats/*" \
-  --profile fgoharvest
-```
-
-現在は `default_ttl=0` / `max_ttl=0` のため通常は不要。
+1. GitHub リポジトリ Settings → Pages → Source を **"GitHub Actions"** に変更
+2. Settings → Secrets and variables → Actions → Variables に以下を追加:
+   - `VITE_DATA_URL` = `https://d393y4hhawhz2i.cloudfront.net`
 
 ## admin
 
