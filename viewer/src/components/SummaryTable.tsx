@@ -93,7 +93,7 @@ function EventItemExpectedTable({ eventItems }: { eventItems: ItemStats[] }) {
 
   return (
     <>
-      <h4>イベントアイテム獲得数期待値</h4>
+      <h4 style={h4Style}>イベントアイテム獲得数期待値</h4>
       <div style={{ overflowX: "auto" }}>
         <table style={{ ...tableStyle, whiteSpace: "nowrap" }}>
           <thead>
@@ -133,7 +133,7 @@ function BonusTable({ title, items }: { title: string; items: ItemStats[] }) {
   }, 0);
   return (
     <>
-      <h4>{title}</h4>
+      <h4 style={h4Style}>{title}</h4>
       <table style={tableStyle}>
         <thead>
           <tr>
@@ -186,7 +186,7 @@ export function SummaryTable({ stats }: Props) {
     <>
       {normal.length > 0 && (
         <>
-        <h4>素材</h4>
+        <h4 style={h4Style}>素材</h4>
         <table style={tableStyle}>
           <thead>
             <tr>
@@ -222,7 +222,7 @@ export function SummaryTable({ stats }: Props) {
 
       {eventItems.length > 0 && (
         <>
-        <h4>イベントアイテム</h4>
+        <h4 style={h4Style}>イベントアイテム</h4>
         <table style={tableStyle}>
           <thead>
             <tr>
@@ -257,6 +257,10 @@ export function SummaryTable({ stats }: Props) {
     </>
   );
 }
+
+const h4Style: React.CSSProperties = {
+  marginBottom: "0.6rem",
+};
 
 const tableStyle: React.CSSProperties = {
   borderCollapse: "collapse",
