@@ -95,9 +95,6 @@ def transform_report(
     items = report.get("items", {})
     result = {}
     warnings = []
-    point_total = 0
-    point_all_nan = True
-    has_point = False
 
     raw_count = is_raw_count_report(items, event_items)
 
@@ -121,26 +118,16 @@ def transform_report(
                 except (ValueError, TypeError):
                     value = None
 
-        # 枠数報告アイテム: 例 ぐん肥(x3)
+        # 枠数報告アイテム: 例 ぐん肥(x3) → キーも値もそのまま保持
         m_box = RE_BOX_COUNT.search(key)
         if m_box:
-            multiplier = int(m_box.group(1))
-            base_name = RE_BOX_COUNT.sub("", key)
-            if value is not None:
-                result[base_name] = value * multiplier
-            else:
-                result[base_name] = None
+            result[key] = value
             continue
 
-        # ポイントアイテム: 例 ポイント(+600)
+        # ポイントアイテム: 例 ポイント(+600) → キーも値もそのまま保持
         m_point = RE_POINT_BONUS.match(key)
         if m_point:
-            has_point = True
-            bonus = int(m_point.group(2))
-            if value is not None:
-                point_total += value * bonus
-                point_all_nan = False
-            # NaN の場合はこのポイント項目をスキップ
+            result[key] = value
             continue
 
         # 実数報告のイベントアイテム: この報告から除外
@@ -149,13 +136,6 @@ def transform_report(
 
         # 通常アイテム
         result[key] = value
-
-    # ポイント合算値を追加
-    if has_point:
-        if point_all_nan:
-            result["ポイント"] = None
-        else:
-            result["ポイント"] = point_total
 
     return result, warnings
 
