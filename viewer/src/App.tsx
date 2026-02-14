@@ -34,13 +34,10 @@ export function App() {
         setEvents(eventsRes.events);
         setExclusions(exclusionsRes);
 
-        const now = new Date();
-        const active = eventsRes.events.find((e) => {
-          const start = new Date(e.period.start);
-          const end = new Date(e.period.end);
-          return now >= start && now <= end;
-        });
-        const target = active ?? eventsRes.events[eventsRes.events.length - 1];
+        const latest = [...eventsRes.events].sort(
+          (a, b) => new Date(b.period.start).getTime() - new Date(a.period.start).getTime()
+        )[0];
+        const target = latest;
         if (target) {
           setSelectedEventId(target.eventId);
           if (target.quests.length > 0) {
