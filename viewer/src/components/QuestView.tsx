@@ -66,7 +66,7 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
           <div style={statsValueStyle}>{totalRuns.toLocaleString()}</div>
         </div>
         <div style={{ alignSelf: "center", fontSize: "0.75rem", color: "#999" }}>
-          データは2時間ごとに更新されます
+          データは3時間ごとに更新されます
         </div>
       </div>
 

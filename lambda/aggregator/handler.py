@@ -210,7 +210,10 @@ def lambda_handler(event: Any, context: Any) -> dict[str, int]:
         period = ev.get("period", {})
         start = datetime.fromisoformat(period["start"])
         end = datetime.fromisoformat(period["end"])
-        if start <= now <= end:
+        # イベント終了直前の報告と Harvest への反映遅延(30-60分)を考慮し、
+        # 終了後も5時間は集計を継続する
+        grace = end + timedelta(hours=5)
+        if start <= now <= grace:
             active_events.append(ev)
 
     if not active_events:

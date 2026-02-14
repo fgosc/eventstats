@@ -1,7 +1,7 @@
 resource "aws_cloudwatch_event_rule" "aggregator_schedule" {
   name                = "eventstats-aggregator-schedule"
-  description         = "Trigger aggregator Lambda every hour"
-  schedule_expression = "rate(2 hours)"
+  description         = "Trigger aggregator Lambda every 3 hours"
+  schedule_expression = "cron(0 0/3 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "aggregator" {
