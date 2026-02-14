@@ -51,13 +51,14 @@ export function EventFormPage() {
     e.preventDefault();
     setError("");
 
+    const sortedQuests = [...quests].sort(sortByLevel);
     const payload: Omit<EventData, "eventId"> = {
       name,
       period: {
         start: toISO(start),
         end: toISO(end),
       },
-      quests,
+      quests: sortedQuests,
       eventItems,
     };
 
@@ -87,7 +88,7 @@ export function EventFormPage() {
 
   const addQuest = () => {
     setQuests(
-      [...quests, { questId: "", name: "", level: "", ap: 40 }].sort(sortByLevel),
+      [...quests, { questId: "", name: "", level: "", ap: 40 }],
     );
   };
 
@@ -103,9 +104,6 @@ export function EventFormPage() {
     const updated = quests.map((q, i) =>
       i === index ? { ...q, [field]: value } : q,
     );
-    if (field === "level") {
-      updated.sort(sortByLevel);
-    }
     setQuests(updated);
   };
 
@@ -139,7 +137,7 @@ export function EventFormPage() {
     if (quests.some((q) => q.questId === c.id)) return;
     const questName = c.place || c.chapter || c.name;
     setQuests(
-      [...quests, { questId: c.id, name: questName, level: "", ap: 40 }].sort(sortByLevel),
+      [...quests, { questId: c.id, name: questName, level: "", ap: 40 }],
     );
   };
 
