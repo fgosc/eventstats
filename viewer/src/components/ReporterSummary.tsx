@@ -130,14 +130,12 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
               <th
                 style={sort.key === "reportCount" ? thStyleSortActive : thStyleSortable}
                 onClick={() => toggleSort("reportCount")}
-                onKeyDown={(e) => e.key === "Enter" && toggleSort("reportCount")}
               >
                 報告数{sortIndicator(sort, "reportCount")}
               </th>
               <th
                 style={sort.key === "totalRuns" ? thStyleSortActive : thStyleSortable}
                 onClick={() => toggleSort("totalRuns")}
-                onKeyDown={(e) => e.key === "Enter" && toggleSort("totalRuns")}
               >
                 合計周回数{sortIndicator(sort, "totalRuns")}
               </th>

@@ -82,14 +82,12 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
             <th
               style={sort?.key === "reporter" ? thStyleSortActive : thStyleSortable}
               onClick={() => toggleSort("reporter")}
-              onKeyDown={(e) => e.key === "Enter" && toggleSort("reporter")}
             >
               報告者{sortIndicator(sort, "reporter")}
             </th>
             <th
               style={sort?.key === "runcount" ? thStyleSortActive : thStyleSortable}
               onClick={() => toggleSort("runcount")}
-              onKeyDown={(e) => e.key === "Enter" && toggleSort("runcount")}
             >
               周回数{sortIndicator(sort, "runcount")}
             </th>
@@ -101,7 +99,6 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
             <th
               style={sort?.key === "timestamp" ? thStyleSortActive : thStyleSortable}
               onClick={() => toggleSort("timestamp")}
-              onKeyDown={(e) => e.key === "Enter" && toggleSort("timestamp")}
             >
               日時{sortIndicator(sort, "timestamp")}
             </th>
