@@ -8,11 +8,12 @@ export function formatDateTime(iso: string): string {
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Tokyo",
   });
 }
 
 export function formatTimestamp(iso: string): string {
-  return new Date(iso).toLocaleString("ja-JP");
+  return new Date(iso).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
 }
 
 export function formatPeriod(period: EventPeriod): string {
