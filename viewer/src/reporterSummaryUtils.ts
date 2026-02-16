@@ -1,4 +1,4 @@
-import type { QuestData, ExclusionsMap } from "./types";
+import type { ExclusionsMap, QuestData } from "./types";
 
 export interface ReportDetail {
   reportId: string;
@@ -29,9 +29,7 @@ export function aggregateReporters(
   const map = new Map<string, ReporterRow>();
 
   for (const qd of allQuestData) {
-    const excludedIds = new Set(
-      (exclusions[qd.quest.questId] ?? []).map((e) => e.reportId),
-    );
+    const excludedIds = new Set((exclusions[qd.quest.questId] ?? []).map((e) => e.reportId));
 
     for (const r of qd.reports) {
       if (excludedIds.has(r.id)) continue;

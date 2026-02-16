@@ -1,5 +1,5 @@
-import { describe, test, expect } from "vitest";
-import { formatDateTime, formatTimestamp, formatPeriod } from "./formatters";
+import { describe, expect, test } from "vitest";
+import { formatDateTime, formatPeriod, formatTimestamp } from "./formatters";
 
 describe("formatDateTime", () => {
   test("ISO 文字列を日本語ローカライズ形式に変換する", () => {

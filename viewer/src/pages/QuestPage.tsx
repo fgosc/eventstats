@@ -1,4 +1,4 @@
-import { Navigate, useParams, useOutletContext } from "react-router-dom";
+import { Navigate, useOutletContext, useParams } from "react-router-dom";
 import type { LayoutContext } from "../AppLayout";
 import { QuestView } from "../components/QuestView";
 
@@ -14,11 +14,5 @@ export function QuestPage() {
   const quest = event.quests.find((q) => q.questId === questId);
   if (!quest) return <Navigate to="/" replace />;
 
-  return (
-    <QuestView
-      eventId={eventId}
-      questId={questId}
-      exclusions={exclusions[questId] ?? []}
-    />
-  );
+  return <QuestView eventId={eventId} questId={questId} exclusions={exclusions[questId] ?? []} />;
 }

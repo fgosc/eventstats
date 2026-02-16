@@ -1,9 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./auth/AuthProvider";
-import { LoginPage } from "./pages/LoginPage";
-import { EventListPage } from "./pages/EventListPage";
-import { EventFormPage } from "./pages/EventFormPage";
 import type { ReactNode } from "react";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AuthProvider, useAuth } from "./auth/AuthProvider";
+import { EventFormPage } from "./pages/EventFormPage";
+import { EventListPage } from "./pages/EventListPage";
+import { LoginPage } from "./pages/LoginPage";
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -19,10 +19,7 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />}
-      />
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />} />
       <Route
         path="/"
         element={

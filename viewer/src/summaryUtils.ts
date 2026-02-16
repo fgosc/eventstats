@@ -35,11 +35,11 @@ export function extractBaseName(name: string): string {
 
 export function extractModifier(name: string): number {
   const mBox = RE_BOX_COUNT.exec(name);
-  if (mBox) return parseInt(mBox[1], 10);
+  if (mBox) return Number.parseInt(mBox[1], 10);
   const mPoint = RE_POINT_BONUS.exec(name);
-  if (mPoint) return parseInt(mPoint[1], 10);
+  if (mPoint) return Number.parseInt(mPoint[1], 10);
   const mQp = RE_QP_BONUS.exec(name);
-  if (mQp) return parseInt(mQp[1], 10);
+  if (mQp) return Number.parseInt(mQp[1], 10);
   return 0;
 }
 

@@ -1,10 +1,7 @@
-import { describe, test, expect } from "vitest";
-import {
-  aggregateReporters,
-  sortRows,
-} from "./reporterSummaryUtils";
+import { describe, expect, test } from "vitest";
+import { aggregateReporters, sortRows } from "./reporterSummaryUtils";
 import type { ReporterRow, SortState } from "./reporterSummaryUtils";
-import type { QuestData, ExclusionsMap } from "./types";
+import type { ExclusionsMap, QuestData } from "./types";
 
 function makeQuestData(
   questId: string,
@@ -104,9 +101,7 @@ describe("aggregateReporters", () => {
 
   test("reporter も空なら匿名をキーにする", () => {
     const data = [
-      makeQuestData("q1", "Quest 1", [
-        { id: "r1", reporter: "", reporterName: "", runcount: 100 },
-      ]),
+      makeQuestData("q1", "Quest 1", [{ id: "r1", reporter: "", reporterName: "", runcount: 100 }]),
     ];
     const rows = aggregateReporters(data, {});
     expect(rows[0].reporter).toBe("匿名");

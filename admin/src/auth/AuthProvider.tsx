@@ -1,16 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
-import {
-  signIn,
-  signOut,
-  getCurrentUser,
-  type SignInInput,
-} from "aws-amplify/auth";
+import { type SignInInput, getCurrentUser, signIn, signOut } from "aws-amplify/auth";
+import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
 
 interface AuthContextValue {
   isAuthenticated: boolean;
@@ -59,9 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider
-      value={{ isAuthenticated, isLoading, username, login, logout }}
-    >
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, username, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

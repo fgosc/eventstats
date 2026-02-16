@@ -1,10 +1,10 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import {
+  calcEventItemExpected,
   classifyStats,
   extractBaseName,
   extractModifier,
   sortByBaseAndModifier,
-  calcEventItemExpected,
 } from "./summaryUtils";
 import type { ItemStats } from "./types";
 
@@ -101,24 +101,13 @@ describe("extractModifier", () => {
 
 describe("sortByBaseAndModifier", () => {
   test("同一ベース名を modifier 昇順でソートする", () => {
-    const items = [
-      makeStats("ぐん肥(x3)"),
-      makeStats("ぐん肥(x1)"),
-      makeStats("ぐん肥(x2)"),
-    ];
+    const items = [makeStats("ぐん肥(x3)"), makeStats("ぐん肥(x1)"), makeStats("ぐん肥(x2)")];
     const sorted = sortByBaseAndModifier(items);
-    expect(sorted.map((s) => s.itemName)).toEqual([
-      "ぐん肥(x1)",
-      "ぐん肥(x2)",
-      "ぐん肥(x3)",
-    ]);
+    expect(sorted.map((s) => s.itemName)).toEqual(["ぐん肥(x1)", "ぐん肥(x2)", "ぐん肥(x3)"]);
   });
 
   test("異なるベース名をベース名順でソートする", () => {
-    const items = [
-      makeStats("極光(x1)"),
-      makeStats("ぐん肥(x1)"),
-    ];
+    const items = [makeStats("極光(x1)"), makeStats("ぐん肥(x1)")];
     const sorted = sortByBaseAndModifier(items);
     expect(sorted[0].itemName).toBe("ぐん肥(x1)");
     expect(sorted[1].itemName).toBe("極光(x1)");
@@ -134,10 +123,7 @@ describe("sortByBaseAndModifier", () => {
 
 describe("calcEventItemExpected", () => {
   test("単一アイテムの期待値を計算する", () => {
-    const items = [
-      makeStats("ぐん肥(x1)", 200, 100),
-      makeStats("ぐん肥(x3)", 100, 100),
-    ];
+    const items = [makeStats("ぐん肥(x1)", 200, 100), makeStats("ぐん肥(x3)", 100, 100)];
     const result = calcEventItemExpected(items);
     expect(result).toHaveLength(1);
     expect(result[0].baseName).toBe("ぐん肥");
@@ -148,10 +134,7 @@ describe("calcEventItemExpected", () => {
   });
 
   test("複数アイテムを別々にグループ化する", () => {
-    const items = [
-      makeStats("ぐん肥(x1)", 100, 100),
-      makeStats("極光(x2)", 50, 100),
-    ];
+    const items = [makeStats("ぐん肥(x1)", 100, 100), makeStats("極光(x2)", 50, 100)];
     const result = calcEventItemExpected(items);
     expect(result).toHaveLength(2);
     expect(result.map((r) => r.baseName)).toEqual(["ぐん肥", "極光"]);

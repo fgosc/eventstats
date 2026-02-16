@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import { getHighestQuest, getLatestEvent } from "./routeUtils";
 import type { EventData, Quest } from "./types";
-import { getLatestEvent, getHighestQuest } from "./routeUtils";
 
 function makeEvent(eventId: string, start: string): EventData {
   return {

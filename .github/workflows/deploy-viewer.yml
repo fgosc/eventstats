@@ -29,12 +29,20 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: |
+            package-lock.json
             viewer/package-lock.json
             admin/package-lock.json
 
+      - name: Lint
+        run: npm ci && npx biome ci .
+
+      - name: Test viewer
+        working-directory: viewer
+        run: npm ci && npx vitest run
+
       - name: Build viewer
         working-directory: viewer
-        run: npm ci && npm run build
+        run: npm run build
         env:
           VITE_DATA_URL: ${{ vars.VITE_DATA_URL }}
 

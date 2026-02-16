@@ -1,6 +1,6 @@
 import { Navigate, useOutletContext } from "react-router-dom";
 import type { LayoutContext } from "../AppLayout";
-import { getLatestEvent, getHighestQuest } from "../routeUtils";
+import { getHighestQuest, getLatestEvent } from "../routeUtils";
 
 export function IndexRedirect() {
   const { events } = useOutletContext<LayoutContext>();

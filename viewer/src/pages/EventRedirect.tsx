@@ -1,4 +1,4 @@
-import { Navigate, useParams, useOutletContext } from "react-router-dom";
+import { Navigate, useOutletContext, useParams } from "react-router-dom";
 import type { LayoutContext } from "../AppLayout";
 import { getHighestQuest } from "../routeUtils";
 

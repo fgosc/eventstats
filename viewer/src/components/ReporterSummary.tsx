@@ -1,23 +1,19 @@
 import React, { useEffect, useState } from "react";
-import type { Quest, QuestData, ExclusionsMap } from "../types";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
+import { DEFAULT_SORT, aggregateReporters, sortRows } from "../reporterSummaryUtils";
+import type { ReportDetail, SortKey, SortState } from "../reporterSummaryUtils";
+import type { ExclusionsMap, Quest, QuestData } from "../types";
 import { StatsBar } from "./StatsBar";
-import {
-  aggregateReporters,
-  sortRows,
-  DEFAULT_SORT,
-} from "../reporterSummaryUtils";
 import {
   sortIndicator,
   tableStyle,
-  thStyle,
-  thStyleSortable,
-  thStyleSortActive,
   tdStyle,
   tdStyleRight,
+  thStyle,
+  thStyleSortActive,
+  thStyleSortable,
 } from "./tableUtils";
-import type { ReportDetail, SortKey, SortState } from "../reporterSummaryUtils";
 
 interface Props {
   eventId: string;
@@ -43,7 +39,9 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
           <th style={{ ...thStyleDetail, minWidth: "10em" }}>クエスト</th>
           <th style={thStyleDetail}>周回数</th>
           {itemCols.map((name) => (
-            <th key={name} style={thStyleDetail}>{name}</th>
+            <th key={name} style={thStyleDetail}>
+              {name}
+            </th>
           ))}
           <th style={thStyleDetail}>日時</th>
         </tr>
@@ -52,7 +50,11 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
         {sorted.map((d, i) => (
           <tr key={i}>
             <td style={tdStyleDetail}>
-              <a href={`https://fgodrop.max747.org/reports/${d.reportId}`} target="_blank" rel="noopener noreferrer">
+              <a
+                href={`https://fgodrop.max747.org/reports/${d.reportId}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 {d.questName}
               </a>
             </td>
@@ -65,9 +67,7 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
                 </td>
               );
             })}
-            <td style={tdStyleDetail}>
-              {formatTimestamp(d.timestamp)}
-            </td>
+            <td style={tdStyleDetail}>{formatTimestamp(d.timestamp)}</td>
           </tr>
         ))}
       </tbody>
@@ -87,9 +87,7 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
     setError(null);
     Promise.all(quests.map((q) => fetchQuestData(eventId, q.questId)))
       .then(setQuestData)
-      .catch((e: unknown) =>
-        setError(e instanceof Error ? e.message : String(e)),
-      )
+      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
   }, [eventId, quests]);
 
@@ -125,14 +123,22 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
         <table style={tableStyle}>
           <thead>
             <tr>
-              <th style={thStyle}></th>
+              <th style={thStyle} />
               <th style={thStyle}>No</th>
               <th style={thStyle}>報告者</th>
               <th style={thStyle}>X ID</th>
-              <th style={sort.key === "reportCount" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("reportCount")}>
+              <th
+                style={sort.key === "reportCount" ? thStyleSortActive : thStyleSortable}
+                onClick={() => toggleSort("reportCount")}
+                onKeyDown={(e) => e.key === "Enter" && toggleSort("reportCount")}
+              >
                 報告数{sortIndicator(sort, "reportCount")}
               </th>
-              <th style={sort.key === "totalRuns" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("totalRuns")}>
+              <th
+                style={sort.key === "totalRuns" ? thStyleSortActive : thStyleSortable}
+                onClick={() => toggleSort("totalRuns")}
+                onKeyDown={(e) => e.key === "Enter" && toggleSort("totalRuns")}
+              >
                 合計周回数{sortIndicator(sort, "totalRuns")}
               </th>
             </tr>
@@ -145,12 +151,15 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
                   <tr>
                     <td style={tdStyle}>
                       <button
-                        onClick={() => setExpanded((prev) => {
-                          const next = new Set(prev);
-                          if (next.has(r.reporter)) next.delete(r.reporter);
-                          else next.add(r.reporter);
-                          return next;
-                        })}
+                        type="button"
+                        onClick={() =>
+                          setExpanded((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(r.reporter)) next.delete(r.reporter);
+                            else next.add(r.reporter);
+                            return next;
+                          })
+                        }
                         style={toggleBtnStyle}
                       >
                         {isExpanded ? "▼" : "▶"}
@@ -159,17 +168,29 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
                     <td style={tdStyleRight}>{i + 1}</td>
                     <td style={tdStyle}>
                       {r.xId && r.xId !== "anonymous" ? (
-                        <a href={`https://fgodrop.max747.org/owners/${r.xId}/reports`} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href={`https://fgodrop.max747.org/owners/${r.xId}/reports`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           {r.reporter}
                         </a>
-                      ) : r.reporter}
+                      ) : (
+                        r.reporter
+                      )}
                     </td>
                     <td style={tdStyle}>
                       {r.xId && r.xId !== "anonymous" ? (
-                        <a href={`https://x.com/${r.xId}`} target="_blank" rel="noopener noreferrer">
+                        <a
+                          href={`https://x.com/${r.xId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
                           {r.xId}
                         </a>
-                      ) : r.xId}
+                      ) : (
+                        r.xId
+                      )}
                     </td>
                     <td style={tdStyleRight}>{r.reportCount.toLocaleString()}</td>
                     <td style={tdStyleRight}>{r.totalRuns.toLocaleString()}</td>
