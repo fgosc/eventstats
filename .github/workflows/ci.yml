@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "viewer/**"
+      - "admin/**"
+      - "biome.json"
+      - "package.json"
+      - "package-lock.json"
+  pull_request:
+    paths:
+      - "viewer/**"
+      - "admin/**"
+      - "biome.json"
+      - "package.json"
+      - "package-lock.json"
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            viewer/package-lock.json
+
+      - name: Lint
+        run: npm ci && npx biome ci .
+
+      - name: Test viewer
+        working-directory: viewer
+        run: npm ci && npx vitest run
