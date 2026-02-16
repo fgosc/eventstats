@@ -1,5 +1,4 @@
-import { Navigate } from "react-router-dom";
-import { useOutletContext } from "react-router-dom";
+import { Navigate, useOutletContext } from "react-router-dom";
 import type { LayoutContext } from "../AppLayout";
 import { getLatestEvent, getHighestQuest } from "../routeUtils";
 
@@ -8,6 +7,6 @@ export function IndexRedirect() {
   const latest = getLatestEvent(events);
   if (!latest) return null;
   const quest = getHighestQuest(latest.quests);
-  if (!quest) return <Navigate to={`events/${latest.eventId}/reporters`} replace />;
-  return <Navigate to={`events/${latest.eventId}/quests/${quest.questId}`} replace />;
+  if (!quest) return <Navigate to={`/events/${latest.eventId}/reporters`} replace />;
+  return <Navigate to={`/events/${latest.eventId}/quests/${quest.questId}`} replace />;
 }

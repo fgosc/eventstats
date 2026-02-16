@@ -1,5 +1,4 @@
-import { Navigate, useParams } from "react-router-dom";
-import { useOutletContext } from "react-router-dom";
+import { Navigate, useParams, useOutletContext } from "react-router-dom";
 import type { LayoutContext } from "../AppLayout";
 import { ReporterSummary } from "../components/ReporterSummary";
 

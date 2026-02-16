@@ -18,7 +18,7 @@ export function AppLayout() {
 
   const navigate = useNavigate();
   const { eventId, questId } = useParams<{ eventId: string; questId: string }>();
-  const reportersMatch = useMatch("events/:eventId/reporters");
+  const reportersMatch = useMatch("/events/:eventId/reporters");
 
   useEffect(() => {
     Promise.all([fetchEvents(), fetchExclusions()])
@@ -42,9 +42,9 @@ export function AppLayout() {
     if (!ev) return;
     const quest = getHighestQuest(ev.quests);
     if (quest) {
-      navigate(`events/${newEventId}/quests/${quest.questId}`);
+      navigate(`/events/${newEventId}/quests/${quest.questId}`);
     } else {
-      navigate(`events/${newEventId}/reporters`);
+      navigate(`/events/${newEventId}/reporters`);
     }
   };
 
@@ -84,7 +84,7 @@ export function AppLayout() {
             .map((q) => (
               <button
                 key={q.questId}
-                onClick={() => navigate(`events/${selectedEvent.eventId}/quests/${q.questId}`)}
+                onClick={() => navigate(`/events/${selectedEvent.eventId}/quests/${q.questId}`)}
                 style={{
                   padding: "6px 16px",
                   marginRight: "4px",
@@ -106,7 +106,7 @@ export function AppLayout() {
               </button>
             ))}
           <button
-            onClick={() => navigate(`events/${selectedEvent.eventId}/reporters`)}
+            onClick={() => navigate(`/events/${selectedEvent.eventId}/reporters`)}
             style={{
               padding: "6px 16px",
               marginRight: "4px",
