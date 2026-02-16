@@ -5,6 +5,12 @@ import {
   sortByBaseAndModifier,
   calcEventItemExpected,
 } from "../summaryUtils";
+import {
+  tableStyle,
+  thStyle as thStyleBase,
+  tdStyle,
+  tdStyleRight,
+} from "./tableUtils";
 
 interface Props {
   stats: ItemStats[];
@@ -189,41 +195,19 @@ const h4Style: React.CSSProperties = {
   marginBottom: "0.6rem",
 };
 
-const tableStyle: React.CSSProperties = {
-  borderCollapse: "collapse",
-  marginBottom: "2rem",
-};
-
-const itemWidth = "12em";
-const numWidth = "8em";
-const narrowNumWidth = "4em";
-
 const thStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
-  padding: "6px 12px",
-  background: "#f5f5f5",
-  textAlign: "left",
-  width: numWidth,
+  ...thStyleBase,
+  width: "8em",
 };
 
 const thStyleItem: React.CSSProperties = {
-  ...thStyle,
-  width: itemWidth,
+  ...thStyleBase,
+  width: "12em",
 };
 
 const thStyleNarrow: React.CSSProperties = {
-  ...thStyle,
-  width: narrowNumWidth,
-};
-
-const tdStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
-  padding: "6px 12px",
-};
-
-const tdStyleRight: React.CSSProperties = {
-  ...tdStyle,
-  textAlign: "right",
+  ...thStyleBase,
+  width: "4em",
 };
 
 const tdStyleBold: React.CSSProperties = {

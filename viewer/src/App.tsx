@@ -1,23 +1,9 @@
 import { useEffect, useState } from "react";
-import type { EventData, EventPeriod, ExclusionsMap } from "./types";
+import type { EventData, ExclusionsMap } from "./types";
 import { fetchEvents, fetchExclusions } from "./api";
 import { QuestView } from "./components/QuestView";
 import { ReporterSummary } from "./components/ReporterSummary";
-
-function formatDateTime(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleString("ja-JP", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-function formatPeriod(period: EventPeriod): string {
-  return `${formatDateTime(period.start)} 〜 ${formatDateTime(period.end)}`;
-}
+import { formatPeriod } from "./formatters";
 
 export function App() {
   const [events, setEvents] = useState<EventData[]>([]);
