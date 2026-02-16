@@ -1,6 +1,17 @@
 import { useState } from "react";
 import type { Report, Exclusion, ItemOutlierStats, ItemStats } from "../types";
 import { isOutlier } from "../aggregate";
+import { formatTimestamp } from "../formatters";
+import { sortReports } from "../reportTableUtils";
+import type { SortKey, SortState } from "../reportTableUtils";
+import {
+  sortIndicator,
+  thStyle,
+  thStyleSortable,
+  thStyleSortActive,
+  tdStyle,
+  tdStyleRight,
+} from "./tableUtils";
 
 interface Props {
   reports: Report[];
@@ -9,10 +20,6 @@ interface Props {
   outlierStats: ItemOutlierStats[];
   stats: ItemStats[];
 }
-
-type SortKey = "reporter" | "runcount" | "timestamp";
-type SortDir = "asc" | "desc";
-type SortState = { key: SortKey; dir: SortDir } | null;
 
 const RE_FGOSCCNT = /https:\/\/fgojunks\.max747\.org\/fgosccnt\/results\/\S+/;
 const RE_MODIFIER = /(\((?:x|\+)\d+\))$/;
@@ -42,38 +49,6 @@ function formatItemHeader(name: string): React.ReactNode {
       {m[1]}
     </>
   );
-}
-
-function sortIndicator(sort: SortState, key: SortKey): string {
-  if (sort && sort.key === key) {
-    return sort.dir === "asc" ? " ▲" : " ▼";
-  }
-  return " △";
-}
-
-function getReporterName(r: Report): string {
-  return r.reporterName || r.reporter || "匿名";
-}
-
-function sortReports(reports: Report[], sort: SortState): Report[] {
-  if (!sort) return reports;
-  const { key, dir } = sort;
-  const sorted = [...reports].sort((a, b) => {
-    let cmp = 0;
-    switch (key) {
-      case "reporter":
-        cmp = getReporterName(a).localeCompare(getReporterName(b));
-        break;
-      case "runcount":
-        cmp = a.runcount - b.runcount;
-        break;
-      case "timestamp":
-        cmp = a.timestamp.localeCompare(b.timestamp);
-        break;
-    }
-    return dir === "asc" ? cmp : -cmp;
-  });
-  return sorted;
 }
 
 export function ReportTable({ reports, exclusions, itemNames, outlierStats, stats }: Props) {
@@ -158,7 +133,7 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
                   );
                 })}
                 <td style={tdStyle}>
-                  {new Date(r.timestamp).toLocaleString("ja-JP")}
+                  {formatTimestamp(r.timestamp)}
                 </td>
                 <td style={{ ...tdStyle, maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>
                   {formatNote(r.note)}
@@ -172,32 +147,9 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
   );
 }
 
-const thStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
-  padding: "6px 12px",
-  background: "#f5f5f5",
-  textAlign: "left",
-};
-
-const thStyleSortable: React.CSSProperties = {
-  ...thStyle,
-  cursor: "pointer",
-  userSelect: "none",
-};
-
-const thStyleSortActive: React.CSSProperties = {
-  ...thStyleSortable,
-  background: "#e3edf7",
-};
-
 const thStyleItem: React.CSSProperties = {
   ...thStyle,
   whiteSpace: "normal",
-};
-
-const tdStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
-  padding: "6px 12px",
 };
 
 const tdStyleReporter: React.CSSProperties = {
@@ -205,9 +157,4 @@ const tdStyleReporter: React.CSSProperties = {
   maxWidth: "15em",
   overflow: "hidden",
   textOverflow: "ellipsis",
-};
-
-const tdStyleRight: React.CSSProperties = {
-  ...tdStyle,
-  textAlign: "right",
 };

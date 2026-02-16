@@ -1,85 +1,28 @@
 import React, { useEffect, useState } from "react";
 import type { Quest, QuestData, ExclusionsMap } from "../types";
 import { fetchQuestData } from "../api";
+import { formatTimestamp } from "../formatters";
+import { StatsBar } from "./StatsBar";
+import {
+  aggregateReporters,
+  sortRows,
+  DEFAULT_SORT,
+} from "../reporterSummaryUtils";
+import {
+  sortIndicator,
+  tableStyle,
+  thStyle,
+  thStyleSortable,
+  thStyleSortActive,
+  tdStyle,
+  tdStyleRight,
+} from "./tableUtils";
+import type { ReportDetail, SortKey, SortState } from "../reporterSummaryUtils";
 
 interface Props {
   eventId: string;
   quests: Quest[];
   exclusions: ExclusionsMap;
-}
-
-interface ReportDetail {
-  reportId: string;
-  questName: string;
-  runcount: number;
-  items: Record<string, number | null>;
-  timestamp: string;
-}
-
-interface ReporterRow {
-  reporter: string;
-  xId: string;
-  reportCount: number;
-  totalRuns: number;
-  details: ReportDetail[];
-}
-
-function aggregateReporters(
-  allQuestData: QuestData[],
-  exclusions: ExclusionsMap,
-): ReporterRow[] {
-  const map = new Map<string, ReporterRow>();
-
-  for (const qd of allQuestData) {
-    const excludedIds = new Set(
-      (exclusions[qd.quest.questId] ?? []).map((e) => e.reportId),
-    );
-
-    for (const r of qd.reports) {
-      if (excludedIds.has(r.id)) continue;
-
-      const name = r.reporterName || r.reporter || "匿名";
-      const entry = map.get(name) ?? {
-        reporter: name,
-        xId: r.reporter || "",
-        reportCount: 0,
-        totalRuns: 0,
-        details: [],
-      };
-      entry.reportCount += 1;
-      entry.totalRuns += r.runcount;
-      entry.details.push({
-        reportId: r.id,
-        questName: qd.quest.name,
-        runcount: r.runcount,
-        items: r.items,
-        timestamp: r.timestamp,
-      });
-      map.set(name, entry);
-    }
-  }
-
-  return [...map.values()];
-}
-
-type SortKey = "reportCount" | "totalRuns";
-type SortDir = "asc" | "desc";
-type SortState = { key: SortKey; dir: SortDir };
-
-const DEFAULT_SORT: SortState = { key: "totalRuns", dir: "desc" };
-
-function sortIndicator(sort: SortState, key: SortKey): string {
-  if (sort.key === key) {
-    return sort.dir === "asc" ? " ▲" : " ▼";
-  }
-  return " △";
-}
-
-function sortRows(rows: ReporterRow[], sort: SortState): ReporterRow[] {
-  return [...rows].sort((a, b) => {
-    const cmp = a[sort.key] - b[sort.key];
-    return sort.dir === "asc" ? cmp : -cmp;
-  });
 }
 
 function DetailTable({ details }: { details: ReportDetail[] }) {
@@ -123,7 +66,7 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
               );
             })}
             <td style={tdStyleDetail}>
-              {new Date(d.timestamp).toLocaleString("ja-JP")}
+              {formatTimestamp(d.timestamp)}
             </td>
           </tr>
         ))}
@@ -169,20 +112,13 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
   return (
     <div>
       <h2>報告者サマリ</h2>
-      <div style={statsBarStyle}>
-        <div style={statsCardStyle}>
-          <div style={statsLabelStyle}>報告者数</div>
-          <div style={statsValueStyle}>{totalReporters.toLocaleString()}</div>
-        </div>
-        <div style={statsCardStyle}>
-          <div style={statsLabelStyle}>総報告数</div>
-          <div style={statsValueStyle}>{totalReports.toLocaleString()}</div>
-        </div>
-        <div style={statsCardStyle}>
-          <div style={statsLabelStyle}>総周回数</div>
-          <div style={statsValueStyle}>{totalRuns.toLocaleString()}</div>
-        </div>
-      </div>
+      <StatsBar
+        items={[
+          { label: "報告者数", value: totalReporters.toLocaleString() },
+          { label: "総報告数", value: totalReports.toLocaleString() },
+          { label: "総周回数", value: totalRuns.toLocaleString() },
+        ]}
+      />
       {rows.length === 0 ? (
         <p>データなし</p>
       ) : (
@@ -254,64 +190,6 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
     </div>
   );
 }
-
-const statsBarStyle: React.CSSProperties = {
-  display: "flex",
-  gap: "12px",
-  marginBottom: "1.5rem",
-  flexWrap: "wrap",
-};
-
-const statsCardStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
-  borderRadius: "6px",
-  padding: "8px 16px",
-  background: "#f9f9f9",
-};
-
-const statsLabelStyle: React.CSSProperties = {
-  fontSize: "0.75rem",
-  color: "#666",
-  marginBottom: "2px",
-};
-
-const statsValueStyle: React.CSSProperties = {
-  fontSize: "1.1rem",
-  fontWeight: "bold",
-};
-
-const tableStyle: React.CSSProperties = {
-  borderCollapse: "collapse",
-  marginBottom: "2rem",
-};
-
-const thStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
-  padding: "6px 12px",
-  background: "#f5f5f5",
-  textAlign: "left",
-};
-
-const thStyleSortable: React.CSSProperties = {
-  ...thStyle,
-  cursor: "pointer",
-  userSelect: "none",
-};
-
-const thStyleSortActive: React.CSSProperties = {
-  ...thStyleSortable,
-  background: "#e3edf7",
-};
-
-const tdStyle: React.CSSProperties = {
-  border: "1px solid #ccc",
-  padding: "6px 12px",
-};
-
-const tdStyleRight: React.CSSProperties = {
-  ...tdStyle,
-  textAlign: "right",
-};
 
 const toggleBtnStyle: React.CSSProperties = {
   background: "none",
