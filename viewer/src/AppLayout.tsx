@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Outlet, useNavigate, useParams, useMatch } from "react-router-dom";
-import type { EventData, ExclusionsMap } from "./types";
+import { Outlet, useMatch, useNavigate, useParams } from "react-router-dom";
 import { fetchEvents, fetchExclusions } from "./api";
 import { formatPeriod } from "./formatters";
 import { getHighestQuest } from "./routeUtils";
+import type { EventData, ExclusionsMap } from "./types";
 
 export interface LayoutContext {
   events: EventData[];
@@ -55,10 +55,7 @@ export function AppLayout() {
       <div style={{ marginBottom: "1rem" }}>
         <label>
           イベント:{" "}
-          <select
-            value={eventId ?? ""}
-            onChange={(e) => handleEventChange(e.target.value)}
-          >
+          <select value={eventId ?? ""} onChange={(e) => handleEventChange(e.target.value)}>
             {events.map((e) => (
               <option key={e.eventId} value={e.eventId}>
                 {e.name}
@@ -83,20 +80,15 @@ export function AppLayout() {
             .sort((a, b) => Number(a.level) - Number(b.level))
             .map((q) => (
               <button
+                type="button"
                 key={q.questId}
                 onClick={() => navigate(`/events/${selectedEvent.eventId}/quests/${q.questId}`)}
                 style={{
                   padding: "6px 16px",
                   marginRight: "4px",
                   marginBottom: "4px",
-                  background:
-                    q.questId === questId && !showReporterSummary
-                      ? "#1976d2"
-                      : "#e0e0e0",
-                  color:
-                    q.questId === questId && !showReporterSummary
-                      ? "#fff"
-                      : "#333",
+                  background: q.questId === questId && !showReporterSummary ? "#1976d2" : "#e0e0e0",
+                  color: q.questId === questId && !showReporterSummary ? "#fff" : "#333",
                   border: "none",
                   borderRadius: "4px",
                   cursor: "pointer",
@@ -106,6 +98,7 @@ export function AppLayout() {
               </button>
             ))}
           <button
+            type="button"
             onClick={() => navigate(`/events/${selectedEvent.eventId}/reporters`)}
             style={{
               padding: "6px 16px",

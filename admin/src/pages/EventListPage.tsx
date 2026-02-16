@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getEvents, deleteEvent } from "../api/client";
-import type { EventData } from "../types";
+import { deleteEvent, getEvents } from "../api/client";
 import { useAuth } from "../auth/AuthProvider";
+import type { EventData } from "../types";
 
 export function EventListPage() {
   const { logout, username } = useAuth();
@@ -10,18 +10,17 @@ export function EventListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchEvents = async () => {
-    try {
-      const data = await getEvents();
-      setEvents(data.events);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch events");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const data = await getEvents();
+        setEvents(data.events);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to fetch events");
+      } finally {
+        setLoading(false);
+      }
+    };
     fetchEvents();
   }, []);
 
@@ -47,12 +46,16 @@ export function EventListPage() {
         <h1>イベント一覧</h1>
         <div>
           <span style={{ marginRight: 12 }}>{username}</span>
-          <button onClick={logout}>ログアウト</button>
+          <button type="button" onClick={logout}>
+            ログアウト
+          </button>
         </div>
       </div>
 
       <Link to="/events/new">
-        <button style={{ marginBottom: 16 }}>新規作成</button>
+        <button type="button" style={{ marginBottom: 16 }}>
+          新規作成
+        </button>
       </Link>
 
       {error && <p style={{ color: "red" }}>{error}</p>}
@@ -83,9 +86,11 @@ export function EventListPage() {
                 <td style={tdStyle}>{ev.quests.length}</td>
                 <td style={tdStyle}>
                   <Link to={`/events/${ev.eventId}/edit`}>
-                    <button style={{ marginRight: 4 }}>編集</button>
+                    <button type="button" style={{ marginRight: 4 }}>
+                      編集
+                    </button>
                   </Link>
-                  <button onClick={() => handleDelete(ev.eventId, ev.name)}>
+                  <button type="button" onClick={() => handleDelete(ev.eventId, ev.name)}>
                     削除
                   </button>
                 </td>

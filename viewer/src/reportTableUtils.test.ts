@@ -1,4 +1,4 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import { getReporterName, sortReports } from "./reportTableUtils";
 import type { SortState } from "./reportTableUtils";
 import type { Report } from "./types";
@@ -33,8 +33,18 @@ describe("getReporterName", () => {
 
 describe("sortReports", () => {
   const reports = [
-    makeReport({ id: "r1", reporterName: "Charlie", runcount: 50, timestamp: "2026-01-03T00:00:00Z" }),
-    makeReport({ id: "r2", reporterName: "Alice", runcount: 200, timestamp: "2026-01-01T00:00:00Z" }),
+    makeReport({
+      id: "r1",
+      reporterName: "Charlie",
+      runcount: 50,
+      timestamp: "2026-01-03T00:00:00Z",
+    }),
+    makeReport({
+      id: "r2",
+      reporterName: "Alice",
+      runcount: 200,
+      timestamp: "2026-01-01T00:00:00Z",
+    }),
     makeReport({ id: "r3", reporterName: "Bob", runcount: 100, timestamp: "2026-01-02T00:00:00Z" }),
   ];
 

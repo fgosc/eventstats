@@ -1,27 +1,21 @@
-import type { Report, Exclusion, ItemStats, ItemOutlierStats } from "./types";
+import type { Exclusion, ItemOutlierStats, ItemStats, Report } from "./types";
 
 const Z = 1.96; // 95% confidence
 
-function wilsonCI(
-  successes: number,
-  n: number,
-): { lower: number; upper: number } {
+function wilsonCI(successes: number, n: number): { lower: number; upper: number } {
   if (n === 0) return { lower: 0, upper: 0 };
   const p = successes / n;
   const z2 = Z * Z;
   const denom = 1 + z2 / n;
   const centre = (p + z2 / (2 * n)) / denom;
-  const margin = (Z / denom) * Math.sqrt(p * (1 - p) / n + z2 / (4 * n * n));
+  const margin = (Z / denom) * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n));
   return {
     lower: Math.max(0, centre - margin),
     upper: Math.min(1, centre + margin),
   };
 }
 
-export function aggregate(
-  reports: Report[],
-  exclusions: Exclusion[],
-): ItemStats[] {
+export function aggregate(reports: Report[], exclusions: Exclusion[]): ItemStats[] {
   const excludedIds = new Set(exclusions.map((e) => e.reportId));
   const validReports = reports.filter((r) => !excludedIds.has(r.id));
 
@@ -66,10 +60,7 @@ function isAlwaysTargetItem(itemName: string): boolean {
   return RE_EVENT_ITEM.test(itemName) || RE_POINT.test(itemName) || RE_QP.test(itemName);
 }
 
-export function calcOutlierStats(
-  reports: Report[],
-  exclusions: Exclusion[],
-): ItemOutlierStats[] {
+export function calcOutlierStats(reports: Report[], exclusions: Exclusion[]): ItemOutlierStats[] {
   const excludedIds = new Set(exclusions.map((e) => e.reportId));
   const validReports = reports.filter((r) => !excludedIds.has(r.id));
 

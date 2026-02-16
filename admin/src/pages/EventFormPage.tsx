@@ -1,12 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  getEvents,
-  createEvent,
-  updateEvent,
-  fetchHarvestQuests,
-} from "../api/client";
-import type { EventData, Quest, HarvestQuest } from "../types";
+import { createEvent, fetchHarvestQuests, getEvents, updateEvent } from "../api/client";
+import type { EventData, HarvestQuest, Quest } from "../types";
 
 export function EventFormPage() {
   const { eventId } = useParams<{ eventId: string }>();
@@ -41,9 +36,7 @@ export function EventFormPage() {
         setQuests([...ev.quests].sort(sortByLevel));
         setEventItems(ev.eventItems ?? []);
       })
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Failed to load"),
-      )
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load"))
       .finally(() => setLoading(false));
   }, [eventId, isEdit]);
 
@@ -87,23 +80,15 @@ export function EventFormPage() {
   };
 
   const addQuest = () => {
-    setQuests(
-      [...quests, { questId: "", name: "", level: "", ap: 40 }],
-    );
+    setQuests([...quests, { questId: "", name: "", level: "", ap: 40 }]);
   };
 
   const removeQuest = (index: number) => {
     setQuests(quests.filter((_, i) => i !== index));
   };
 
-  const updateQuest = (
-    index: number,
-    field: keyof Quest,
-    value: string | number,
-  ) => {
-    const updated = quests.map((q, i) =>
-      i === index ? { ...q, [field]: value } : q,
-    );
+  const updateQuest = (index: number, field: keyof Quest, value: string | number) => {
+    const updated = quests.map((q, i) => (i === index ? { ...q, [field]: value } : q));
     setQuests(updated);
   };
 
@@ -125,9 +110,7 @@ export function EventFormPage() {
       });
       setCandidates(filtered);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Harvest データ取得に失敗",
-      );
+      setError(err instanceof Error ? err.message : "Harvest データ取得に失敗");
     } finally {
       setCandidatesLoading(false);
     }
@@ -136,9 +119,7 @@ export function EventFormPage() {
   const addCandidate = (c: HarvestQuest) => {
     if (quests.some((q) => q.questId === c.id)) return;
     const questName = c.place || c.chapter || c.name;
-    setQuests(
-      [...quests, { questId: c.id, name: questName, level: "", ap: 40 }],
-    );
+    setQuests([...quests, { questId: c.id, name: questName, level: "", ap: 40 }]);
   };
 
   if (loading) return <p>読み込み中...</p>;
@@ -259,17 +240,13 @@ export function EventFormPage() {
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <strong>Harvest からクエスト候補を取得</strong>
-            <button
-              type="button"
-              onClick={fetchCandidates}
-              disabled={candidatesLoading}
-            >
+            <button type="button" onClick={fetchCandidates} disabled={candidatesLoading}>
               {candidatesLoading ? "取得中..." : "候補を取得"}
             </button>
           </div>
           <p style={{ fontSize: 12, color: "#666", margin: "4px 0 0" }}>
-            イベント期間内に報告があるクエスト (is_freequest=false) を取得します。
-            level と AP は手動で設定してください。
+            イベント期間内に報告があるクエスト (is_freequest=false) を取得します。 level と AP
+            は手動で設定してください。
           </p>
 
           {candidates.length > 0 && (
@@ -294,17 +271,12 @@ export function EventFormPage() {
                   <tr key={c.id}>
                     <td style={candidateTd}>{c.name}</td>
                     <td style={candidateTd}>{c.count}</td>
-                    <td style={candidateTd}>
-                      {new Date(c.since).toLocaleDateString("ja-JP")}
-                    </td>
+                    <td style={candidateTd}>{new Date(c.since).toLocaleDateString("ja-JP")}</td>
                     <td style={candidateTd}>
                       {addedIds.has(c.id) ? (
                         <span style={{ color: "#888" }}>追加済み</span>
                       ) : (
-                        <button
-                          type="button"
-                          onClick={() => addCandidate(c)}
-                        >
+                        <button type="button" onClick={() => addCandidate(c)}>
                           追加
                         </button>
                       )}
@@ -364,9 +336,7 @@ export function EventFormPage() {
                 <input
                   type="number"
                   value={q.ap}
-                  onChange={(e) =>
-                    updateQuest(i, "ap", parseInt(e.target.value, 10) || 0)
-                  }
+                  onChange={(e) => updateQuest(i, "ap", Number.parseInt(e.target.value, 10) || 0)}
                   style={{ display: "block", width: "100%", marginTop: 4 }}
                   required
                 />
@@ -378,11 +348,7 @@ export function EventFormPage() {
           </div>
         ))}
 
-        <button
-          type="button"
-          onClick={addQuest}
-          style={{ marginBottom: 16 }}
-        >
+        <button type="button" onClick={addQuest} style={{ marginBottom: 16 }}>
           クエスト追加
         </button>
 
@@ -402,7 +368,7 @@ const SUFFIX_ORDER = ["", "+", "++", "+++", "\u2605", "\u2605\u2605", "\u2605\u2
 function parseLevelKey(level: string): [number, number] {
   const m = level.match(/^(\d+)(.*)/);
   if (!m) return [0, 0];
-  const num = parseInt(m[1], 10);
+  const num = Number.parseInt(m[1], 10);
   const suffix = m[2];
   const suffixIdx = SUFFIX_ORDER.indexOf(suffix);
   return [num, suffixIdx >= 0 ? suffixIdx : SUFFIX_ORDER.length];
@@ -423,7 +389,7 @@ function toLocalInput(iso: string): string {
 }
 
 function toISO(localInput: string): string {
-  return localInput + ":00+09:00";
+  return `${localInput}:00+09:00`;
 }
 
 const candidateTh: React.CSSProperties = {

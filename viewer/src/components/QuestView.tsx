@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import type { QuestData, Exclusion } from "../types";
-import { fetchQuestData } from "../api";
 import { aggregate, calcOutlierStats } from "../aggregate";
+import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
-import { SummaryTable } from "./SummaryTable";
+import type { Exclusion, QuestData } from "../types";
 import { ReportTable } from "./ReportTable";
 import { StatsBar } from "./StatsBar";
+import { SummaryTable } from "./SummaryTable";
 
 interface Props {
   eventId: string;
@@ -69,7 +69,9 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
 
       <h3 style={{ marginBottom: "0.25rem" }}>報告一覧</h3>
       <p style={{ margin: "0 0 0.5rem", fontSize: "0.75rem", color: "#666" }}>
-        <span style={{ background: "#fde8e8", padding: "1px 6px", marginRight: "4px" }}>色付きセル</span>
+        <span style={{ background: "#fde8e8", padding: "1px 6px", marginRight: "4px" }}>
+          色付きセル
+        </span>
         統計的に外れ値の可能性があるドロップ数（ホバーで z-score 表示）
       </p>
       <ReportTable
@@ -82,4 +84,3 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
     </div>
   );
 }
-

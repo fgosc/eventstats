@@ -1,16 +1,11 @@
-import type { ItemStats } from "../types";
 import {
+  calcEventItemExpected,
   classifyStats,
   extractModifier,
   sortByBaseAndModifier,
-  calcEventItemExpected,
 } from "../summaryUtils";
-import {
-  tableStyle,
-  thStyle as thStyleBase,
-  tdStyle,
-  tdStyleRight,
-} from "./tableUtils";
+import type { ItemStats } from "../types";
+import { tableStyle, tdStyle, tdStyleRight, thStyle as thStyleBase } from "./tableUtils";
 
 interface Props {
   stats: ItemStats[];
@@ -34,7 +29,9 @@ function EventItemExpectedTable({ eventItems }: { eventItems: ItemStats[] }) {
               <th style={thStyleItem}>アイテム</th>
               <th style={thStyleNarrow}>枠数</th>
               {bonusRange.map((n) => (
-                <th key={n} style={thStyleNarrow}>+{n}</th>
+                <th key={n} style={thStyleNarrow}>
+                  +{n}
+                </th>
               ))}
             </tr>
           </thead>
@@ -86,14 +83,10 @@ function BonusTable({ title, items }: { title: string; items: ItemStats[] }) {
                 <td style={tdStyleRight}>{s.totalDrops.toLocaleString()}</td>
                 <td style={tdStyleRight}>{s.totalRuns.toLocaleString()}</td>
                 <td style={tdStyleRight}>
-                  {s.totalRuns > 0
-                    ? (s.totalDrops / s.totalRuns).toFixed(2)
-                    : "-"}
+                  {s.totalRuns > 0 ? (s.totalDrops / s.totalRuns).toFixed(2) : "-"}
                 </td>
                 <td style={tdStyleRight}>
-                  {s.totalRuns > 0
-                    ? ((s.totalDrops / s.totalRuns) * bonus).toFixed(2)
-                    : "-"}
+                  {s.totalRuns > 0 ? ((s.totalDrops / s.totalRuns) * bonus).toFixed(2) : "-"}
                 </td>
               </tr>
             );
@@ -101,7 +94,9 @@ function BonusTable({ title, items }: { title: string; items: ItemStats[] }) {
         </tbody>
         <tfoot>
           <tr>
-            <td style={tdStyleBold} colSpan={4}>合計</td>
+            <td style={tdStyleBold} colSpan={4}>
+              合計
+            </td>
             <td style={tdStyleRightBold}>{totalExpected.toFixed(2)}</td>
           </tr>
         </tfoot>
@@ -119,68 +114,64 @@ export function SummaryTable({ stats }: Props) {
     <>
       {normal.length > 0 && (
         <>
-        <h4 style={h4Style}>素材</h4>
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={thStyleItem}>アイテム</th>
-              <th style={thStyle}>合計ドロップ</th>
-              <th style={thStyle}>合計周回数</th>
-              <th style={thStyle}>ドロップ率</th>
-              <th style={thStyle}>95%信頼区間幅</th>
-            </tr>
-          </thead>
-          <tbody>
-            {normal.map((s) => (
-              <tr key={s.itemName}>
-                <td style={tdStyle}>{s.itemName}</td>
-                <td style={tdStyleRight}>{s.totalDrops.toLocaleString()}</td>
-                <td style={tdStyleRight}>{s.totalRuns.toLocaleString()}</td>
-                <td style={tdStyleRight}>
-                  {s.totalRuns > 0
-                    ? `${(s.dropRate * 100).toFixed(2)}%`
-                    : "-"}
-                </td>
-                <td style={tdStyleRight}>
-                  {s.totalRuns > 0
-                    ? `±${((s.ciUpper - s.ciLower) / 2 * 100).toFixed(2)}%`
-                    : "-"}
-                </td>
+          <h4 style={h4Style}>素材</h4>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyleItem}>アイテム</th>
+                <th style={thStyle}>合計ドロップ</th>
+                <th style={thStyle}>合計周回数</th>
+                <th style={thStyle}>ドロップ率</th>
+                <th style={thStyle}>95%信頼区間幅</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {normal.map((s) => (
+                <tr key={s.itemName}>
+                  <td style={tdStyle}>{s.itemName}</td>
+                  <td style={tdStyleRight}>{s.totalDrops.toLocaleString()}</td>
+                  <td style={tdStyleRight}>{s.totalRuns.toLocaleString()}</td>
+                  <td style={tdStyleRight}>
+                    {s.totalRuns > 0 ? `${(s.dropRate * 100).toFixed(2)}%` : "-"}
+                  </td>
+                  <td style={tdStyleRight}>
+                    {s.totalRuns > 0
+                      ? `±${(((s.ciUpper - s.ciLower) / 2) * 100).toFixed(2)}%`
+                      : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </>
       )}
 
       {eventItems.length > 0 && (
         <>
-        <h4 style={h4Style}>イベントアイテム</h4>
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={thStyleItem}>アイテム</th>
-              <th style={thStyle}>合計ドロップ</th>
-              <th style={thStyle}>合計周回数</th>
-              <th style={thStyle}>1周あたり枠数</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortByBaseAndModifier(eventItems).map((s) => (
-              <tr key={s.itemName}>
-                <td style={tdStyle}>{s.itemName}</td>
-                <td style={tdStyleRight}>{s.totalDrops.toLocaleString()}</td>
-                <td style={tdStyleRight}>{s.totalRuns.toLocaleString()}</td>
-                <td style={tdStyleRight}>
-                  {s.totalRuns > 0
-                    ? (s.totalDrops / s.totalRuns).toFixed(2)
-                    : "-"}
-                </td>
+          <h4 style={h4Style}>イベントアイテム</h4>
+          <table style={tableStyle}>
+            <thead>
+              <tr>
+                <th style={thStyleItem}>アイテム</th>
+                <th style={thStyle}>合計ドロップ</th>
+                <th style={thStyle}>合計周回数</th>
+                <th style={thStyle}>1周あたり枠数</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        <EventItemExpectedTable eventItems={eventItems} />
+            </thead>
+            <tbody>
+              {sortByBaseAndModifier(eventItems).map((s) => (
+                <tr key={s.itemName}>
+                  <td style={tdStyle}>{s.itemName}</td>
+                  <td style={tdStyleRight}>{s.totalDrops.toLocaleString()}</td>
+                  <td style={tdStyleRight}>{s.totalRuns.toLocaleString()}</td>
+                  <td style={tdStyleRight}>
+                    {s.totalRuns > 0 ? (s.totalDrops / s.totalRuns).toFixed(2) : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <EventItemExpectedTable eventItems={eventItems} />
         </>
       )}
 

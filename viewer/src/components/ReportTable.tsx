@@ -1,16 +1,16 @@
 import { useState } from "react";
-import type { Report, Exclusion, ItemOutlierStats, ItemStats } from "../types";
 import { isOutlier } from "../aggregate";
 import { formatTimestamp } from "../formatters";
 import { sortReports } from "../reportTableUtils";
 import type { SortKey, SortState } from "../reportTableUtils";
+import type { Exclusion, ItemOutlierStats, ItemStats, Report } from "../types";
 import {
   sortIndicator,
-  thStyle,
-  thStyleSortable,
-  thStyleSortActive,
   tdStyle,
   tdStyleRight,
+  thStyle,
+  thStyleSortActive,
+  thStyleSortable,
 } from "./tableUtils";
 
 interface Props {
@@ -32,7 +32,9 @@ function formatNote(note: string): React.ReactNode {
   return (
     <>
       {before}
-      <a href={m[0]} target="_blank" rel="noopener noreferrer">fgosccnt</a>
+      <a href={m[0]} target="_blank" rel="noopener noreferrer">
+        fgosccnt
+      </a>
       {after}
     </>
   );
@@ -77,10 +79,16 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
         <thead>
           <tr>
             <th style={thStyle}>状態</th>
-            <th style={sort?.key === "reporter" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("reporter")}>
+            <th
+              style={sort?.key === "reporter" ? thStyleSortActive : thStyleSortable}
+              onClick={() => toggleSort("reporter")}
+            >
               報告者{sortIndicator(sort, "reporter")}
             </th>
-            <th style={sort?.key === "runcount" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("runcount")}>
+            <th
+              style={sort?.key === "runcount" ? thStyleSortActive : thStyleSortable}
+              onClick={() => toggleSort("runcount")}
+            >
               周回数{sortIndicator(sort, "runcount")}
             </th>
             {itemNames.map((name) => (
@@ -88,7 +96,10 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
                 {formatItemHeader(name)}
               </th>
             ))}
-            <th style={sort?.key === "timestamp" ? thStyleSortActive : thStyleSortable} onClick={() => toggleSort("timestamp")}>
+            <th
+              style={sort?.key === "timestamp" ? thStyleSortActive : thStyleSortable}
+              onClick={() => toggleSort("timestamp")}
+            >
               日時{sortIndicator(sort, "timestamp")}
             </th>
             <th style={thStyle}>メモ</th>
@@ -103,11 +114,13 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
 
             return (
               <tr key={r.id} style={rowStyle} title={excluded ? exclusionMap.get(r.id) : undefined}>
-                <td style={tdStyle}>
-                  {excluded ? "除外" : "有効"}
-                </td>
+                <td style={tdStyle}>{excluded ? "除外" : "有効"}</td>
                 <td style={tdStyleReporter} title={r.reporterName || r.reporter || "匿名"}>
-                  <a href={`https://fgodrop.max747.org/reports/${r.id}`} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={`https://fgodrop.max747.org/reports/${r.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     {r.reporterName || r.reporter || "匿名"}
                   </a>
                 </td>
@@ -116,12 +129,12 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
                   const value = r.items[name];
                   const oStats = outlierMap.get(name);
                   const iStats = statsMap.get(name);
-                  const zScore = !excluded && oStats && iStats
-                    ? isOutlier(value, r.runcount, oStats, iStats.dropRate)
-                    : null;
-                  const cellStyle: React.CSSProperties = zScore != null
-                    ? { ...tdStyleRight, background: "#fde8e8" }
-                    : tdStyleRight;
+                  const zScore =
+                    !excluded && oStats && iStats
+                      ? isOutlier(value, r.runcount, oStats, iStats.dropRate)
+                      : null;
+                  const cellStyle: React.CSSProperties =
+                    zScore != null ? { ...tdStyleRight, background: "#fde8e8" } : tdStyleRight;
                   return (
                     <td
                       key={name}
@@ -132,10 +145,15 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
                     </td>
                   );
                 })}
-                <td style={tdStyle}>
-                  {formatTimestamp(r.timestamp)}
-                </td>
-                <td style={{ ...tdStyle, maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>
+                <td style={tdStyle}>{formatTimestamp(r.timestamp)}</td>
+                <td
+                  style={{
+                    ...tdStyle,
+                    maxWidth: "200px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
                   {formatNote(r.note)}
                 </td>
               </tr>

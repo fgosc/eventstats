@@ -1,12 +1,8 @@
-import { describe, test, expect } from "vitest";
+import { describe, expect, test } from "vitest";
 import { aggregate, calcOutlierStats, isOutlier } from "./aggregate";
-import type { Report, Exclusion, ItemOutlierStats } from "./types";
+import type { Exclusion, ItemOutlierStats, Report } from "./types";
 
-function makeReport(
-  id: string,
-  runcount: number,
-  items: Record<string, number | null>,
-): Report {
+function makeReport(id: string, runcount: number, items: Record<string, number | null>): Report {
   return {
     id,
     reporter: "user1",
@@ -40,10 +36,7 @@ describe("aggregate", () => {
   });
 
   test("複数報告を合算する", () => {
-    const reports = [
-      makeReport("r1", 100, { 鉄杭: 80 }),
-      makeReport("r2", 200, { 鉄杭: 150 }),
-    ];
+    const reports = [makeReport("r1", 100, { 鉄杭: 80 }), makeReport("r2", 200, { 鉄杭: 150 })];
     const stats = aggregate(reports, []);
     const iron = stats.find((s) => s.itemName === "鉄杭")!;
     expect(iron.totalDrops).toBe(230);
@@ -52,10 +45,7 @@ describe("aggregate", () => {
   });
 
   test("除外対象の報告を除く", () => {
-    const reports = [
-      makeReport("r1", 100, { 鉄杭: 80 }),
-      makeReport("r2", 100, { 鉄杭: 90 }),
-    ];
+    const reports = [makeReport("r1", 100, { 鉄杭: 80 }), makeReport("r2", 100, { 鉄杭: 90 })];
     const exclusions: Exclusion[] = [{ reportId: "r2", reason: "外れ値" }];
     const stats = aggregate(reports, exclusions);
     const iron = stats.find((s) => s.itemName === "鉄杭")!;
@@ -110,10 +100,7 @@ describe("calcOutlierStats", () => {
   });
 
   test("除外を反映する", () => {
-    const reports = [
-      makeReport("r1", 100, { 鉄杭: 80 }),
-      makeReport("r2", 100, { 鉄杭: 60 }),
-    ];
+    const reports = [makeReport("r1", 100, { 鉄杭: 80 }), makeReport("r2", 100, { 鉄杭: 60 })];
     const exclusions: Exclusion[] = [{ reportId: "r1", reason: "除外" }];
     const result = calcOutlierStats(reports, exclusions);
     const iron = result.find((s) => s.itemName === "鉄杭")!;

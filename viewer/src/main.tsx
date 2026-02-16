@@ -1,9 +1,9 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
+import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
-import { IndexRedirect } from "./pages/IndexRedirect";
 import { EventRedirect } from "./pages/EventRedirect";
+import { IndexRedirect } from "./pages/IndexRedirect";
 import { QuestPage } from "./pages/QuestPage";
 import { ReportersPage } from "./pages/ReportersPage";
 
