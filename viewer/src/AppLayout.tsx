@@ -1,36 +1,30 @@
 import { useEffect, useState } from "react";
+import { Outlet, useNavigate, useParams, useMatch } from "react-router-dom";
 import type { EventData, ExclusionsMap } from "./types";
 import { fetchEvents, fetchExclusions } from "./api";
-import { QuestView } from "./components/QuestView";
-import { ReporterSummary } from "./components/ReporterSummary";
 import { formatPeriod } from "./formatters";
+import { getHighestQuest } from "./routeUtils";
 
-export function App() {
+export interface LayoutContext {
+  events: EventData[];
+  exclusions: ExclusionsMap;
+}
+
+export function AppLayout() {
   const [events, setEvents] = useState<EventData[]>([]);
   const [exclusions, setExclusions] = useState<ExclusionsMap>({});
-  const [selectedEventId, setSelectedEventId] = useState<string>("");
-  const [selectedQuestId, setSelectedQuestId] = useState<string>("");
-  const [showReporterSummary, setShowReporterSummary] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
+  const { eventId, questId } = useParams<{ eventId: string; questId: string }>();
+  const reportersMatch = useMatch("/events/:eventId/reporters");
 
   useEffect(() => {
     Promise.all([fetchEvents(), fetchExclusions()])
       .then(([eventsRes, exclusionsRes]) => {
         setEvents(eventsRes.events);
         setExclusions(exclusionsRes);
-
-        const latest = [...eventsRes.events].sort(
-          (a, b) => new Date(b.period.start).getTime() - new Date(a.period.start).getTime()
-        )[0];
-        const target = latest;
-        if (target) {
-          setSelectedEventId(target.eventId);
-          if (target.quests.length > 0) {
-            const sorted = [...target.quests].sort((a, b) => Number(a.level) - Number(b.level));
-            setSelectedQuestId(sorted[sorted.length - 1].questId);
-          }
-        }
       })
       .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
@@ -40,7 +34,19 @@ export function App() {
   if (error) return <p style={{ color: "red" }}>エラー: {error}</p>;
   if (events.length === 0) return <p>イベントが登録されていません。</p>;
 
-  const selectedEvent = events.find((e) => e.eventId === selectedEventId);
+  const selectedEvent = events.find((e) => e.eventId === eventId);
+  const showReporterSummary = reportersMatch !== null;
+
+  const handleEventChange = (newEventId: string) => {
+    const ev = events.find((e) => e.eventId === newEventId);
+    if (!ev) return;
+    const quest = getHighestQuest(ev.quests);
+    if (quest) {
+      navigate(`/events/${newEventId}/quests/${quest.questId}`);
+    } else {
+      navigate(`/events/${newEventId}/reporters`);
+    }
+  };
 
   return (
     <div style={{ padding: "1rem", fontFamily: "sans-serif" }}>
@@ -50,19 +56,8 @@ export function App() {
         <label>
           イベント:{" "}
           <select
-            value={selectedEventId}
-            onChange={(e) => {
-              const eventId = e.target.value;
-              setSelectedEventId(eventId);
-              setShowReporterSummary(false);
-              const ev = events.find((ev) => ev.eventId === eventId);
-              if (ev && ev.quests.length > 0) {
-                const sorted = [...ev.quests].sort((a, b) => Number(a.level) - Number(b.level));
-                setSelectedQuestId(sorted[sorted.length - 1].questId);
-              } else {
-                setSelectedQuestId("");
-              }
-            }}
+            value={eventId ?? ""}
+            onChange={(e) => handleEventChange(e.target.value)}
           >
             {events.map((e) => (
               <option key={e.eventId} value={e.eventId}>
@@ -89,14 +84,19 @@ export function App() {
             .map((q) => (
               <button
                 key={q.questId}
-                onClick={() => { setSelectedQuestId(q.questId); setShowReporterSummary(false); }}
+                onClick={() => navigate(`/events/${selectedEvent.eventId}/quests/${q.questId}`)}
                 style={{
                   padding: "6px 16px",
                   marginRight: "4px",
                   marginBottom: "4px",
                   background:
-                    q.questId === selectedQuestId ? "#1976d2" : "#e0e0e0",
-                  color: q.questId === selectedQuestId ? "#fff" : "#333",
+                    q.questId === questId && !showReporterSummary
+                      ? "#1976d2"
+                      : "#e0e0e0",
+                  color:
+                    q.questId === questId && !showReporterSummary
+                      ? "#fff"
+                      : "#333",
                   border: "none",
                   borderRadius: "4px",
                   cursor: "pointer",
@@ -106,7 +106,7 @@ export function App() {
               </button>
             ))}
           <button
-            onClick={() => { setShowReporterSummary(true); setSelectedQuestId(""); }}
+            onClick={() => navigate(`/events/${selectedEvent.eventId}/reporters`)}
             style={{
               padding: "6px 16px",
               marginRight: "4px",
@@ -123,22 +123,7 @@ export function App() {
         </div>
       )}
 
-      {selectedEvent && showReporterSummary && (
-        <ReporterSummary
-          eventId={selectedEvent.eventId}
-          quests={selectedEvent.quests}
-          exclusions={exclusions}
-        />
-      )}
-
-      {selectedEvent && selectedQuestId && !showReporterSummary && (
-        <QuestView
-          eventId={selectedEvent.eventId}
-          questId={selectedQuestId}
-          exclusions={exclusions[selectedQuestId] ?? []}
-        />
-      )}
-
+      <Outlet context={{ events, exclusions } satisfies LayoutContext} />
     </div>
   );
 }

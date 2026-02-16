@@ -49,6 +49,7 @@ jobs:
       - name: Combine artifacts
         run: |
           mv viewer/dist _site
+          cp _site/index.html _site/404.html
           cp -r admin/dist _site/admin
 
       - uses: actions/configure-pages@v5
