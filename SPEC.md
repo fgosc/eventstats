@@ -49,7 +49,7 @@ FGO イベント報告データを集計し、アイテムドロップ率を算�
 - API Gateway + Lambda で構成
 - イベント CRUD: `events.json` の読み書き
 - 除外リスト管理: `exclusions.json` の読み書き
-- 認証方式は TBD (API キー、Cognito 等)
+- 認証方式は Cognito
 
 ### 2.3 公開画面
 
@@ -444,11 +444,27 @@ report_id: `605fc0f1` — `items` にイベントアイテム (ぐん肥/のび�
 - アコーディオン展開で報告明細を確認可能
 - 報告者名から fgodrop / X へのリンク
 
-### 10.3 技術スタック
+### 10.3 URL ルーティング
+
+パスベースのパーマリンクにより、各画面に固有の URL を持たせる。
+
+| パス | 表示内容 |
+|---|---|
+| `/eventstats/` | 最新イベントの最高難度クエストへリダイレクト |
+| `/eventstats/events/:eventId` | そのイベントの最高難度クエストへリダイレクト |
+| `/eventstats/events/:eventId/quests/:questId` | クエスト詳細 |
+| `/eventstats/events/:eventId/reporters` | 報告者サマリ |
+
+- `react-router-dom` の `createBrowserRouter` を使用 (`basename: "/eventstats"`)
+- ブラウザの戻る/進むが機能する
+- GitHub Pages SPA 対応: ビルド時に `index.html` を `404.html` にコピー
+
+### 10.4 技術スタック
 
 - GitHub Pages でホスティング (GitHub Actions で自動デプロイ)
 - Harvest とは独立して運用
 - React + TypeScript (Vite)
+- react-router-dom (クライアントサイドルーティング)
 
 ## 11. 技術スタック
 
