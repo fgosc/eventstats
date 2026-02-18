@@ -1,9 +1,19 @@
+import type React from "react";
 import { useEffect, useState } from "react";
 import { Outlet, useMatch, useNavigate, useParams } from "react-router-dom";
 import { fetchEvents, fetchExclusions } from "./api";
 import { formatPeriod } from "./formatters";
 import { getHighestQuest } from "./routeUtils";
 import type { EventData, ExclusionsMap } from "./types";
+
+const navBtnStyle: React.CSSProperties = {
+  padding: "6px 16px",
+  marginRight: "4px",
+  marginBottom: "4px",
+  border: "none",
+  borderRadius: "4px",
+  cursor: "pointer",
+};
 
 export interface LayoutContext {
   events: EventData[];
@@ -19,6 +29,7 @@ export function AppLayout() {
   const navigate = useNavigate();
   const { eventId, questId } = useParams<{ eventId: string; questId: string }>();
   const reportersMatch = useMatch("/events/:eventId/reporters");
+  const eventItemSummaryMatch = useMatch("/events/:eventId/event-items");
 
   useEffect(() => {
     Promise.all([fetchEvents(), fetchExclusions()])
@@ -36,6 +47,10 @@ export function AppLayout() {
 
   const selectedEvent = events.find((e) => e.eventId === eventId);
   const showReporterSummary = reportersMatch !== null;
+  const showEventItemSummary = eventItemSummaryMatch !== null;
+
+  const isQuestActive = (qId: string) =>
+    qId === questId && !showReporterSummary && !showEventItemSummary;
 
   const handleEventChange = (newEventId: string) => {
     const ev = events.find((e) => e.eventId === newEventId);
@@ -84,14 +99,9 @@ export function AppLayout() {
                 key={q.questId}
                 onClick={() => navigate(`/events/${selectedEvent.eventId}/quests/${q.questId}`)}
                 style={{
-                  padding: "6px 16px",
-                  marginRight: "4px",
-                  marginBottom: "4px",
-                  background: q.questId === questId && !showReporterSummary ? "#1976d2" : "#e0e0e0",
-                  color: q.questId === questId && !showReporterSummary ? "#fff" : "#333",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer",
+                  ...navBtnStyle,
+                  background: isQuestActive(q.questId) ? "#1976d2" : "#e0e0e0",
+                  color: isQuestActive(q.questId) ? "#fff" : "#333",
                 }}
               >
                 Lv.{q.level} {q.name}
@@ -99,16 +109,22 @@ export function AppLayout() {
             ))}
           <button
             type="button"
+            onClick={() => navigate(`/events/${selectedEvent.eventId}/event-items`)}
+            style={{
+              ...navBtnStyle,
+              background: showEventItemSummary ? "#1976d2" : "#e0e0e0",
+              color: showEventItemSummary ? "#fff" : "#333",
+            }}
+          >
+            イベントアイテムサマリ
+          </button>
+          <button
+            type="button"
             onClick={() => navigate(`/events/${selectedEvent.eventId}/reporters`)}
             style={{
-              padding: "6px 16px",
-              marginRight: "4px",
-              marginBottom: "4px",
+              ...navBtnStyle,
               background: showReporterSummary ? "#1976d2" : "#e0e0e0",
               color: showReporterSummary ? "#fff" : "#333",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
             }}
           >
             報告者サマリ

@@ -436,6 +436,13 @@ report_id: `605fc0f1` — `items` にイベントアイテム (ぐん肥/のび�
   - 除外済み報告のセルはハイライト対象外
   - 見出しとテーブルの間に色付きセルの凡例を表示
 
+#### イベントアイテムサマリ (イベント全体)
+
+- 全クエストを横断してイベントアイテムの獲得数期待値を比較できるビュー
+- アイテムベース名ごとにセクションを分けて表示
+- 各セクション内のテーブル: 行=クエスト (Lv 表示のみ)、列=周回数 / 枠数 / +0 〜 +12
+- 該当クエストにそのアイテムが存在しない場合は "-" を表示
+
 #### 報告者サマリ (イベント全体)
 
 - 全クエスト横断で報告者単位に集約
@@ -454,6 +461,7 @@ report_id: `605fc0f1` — `items` にイベントアイテム (ぐん肥/のび�
 | `/eventstats/events/:eventId` | そのイベントの最高難度クエストへリダイレクト |
 | `/eventstats/events/:eventId/quests/:questId` | クエスト詳細 |
 | `/eventstats/events/:eventId/reporters` | 報告者サマリ |
+| `/eventstats/events/:eventId/event-items` | イベントアイテムサマリ |
 
 - `react-router-dom` の `createBrowserRouter` を使用 (`basename: "/eventstats"`)
 - ブラウザの戻る/進むが機能する
