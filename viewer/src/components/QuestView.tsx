@@ -29,7 +29,7 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
 
   if (loading) return <p>読み込み中...</p>;
   if (error) return <p style={{ color: "red" }}>エラー: {error}</p>;
-  if (!data) return null;
+  if (!data) return <p>このクエストのデータはまだ登録されていません。</p>;
 
   const stats = aggregate(data.reports, exclusions);
   const outlierStats = calcOutlierStats(data.reports, exclusions);

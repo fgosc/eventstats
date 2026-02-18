@@ -86,7 +86,7 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
     setLoading(true);
     setError(null);
     Promise.all(quests.map((q) => fetchQuestData(eventId, q.questId)))
-      .then(setQuestData)
+      .then((results) => setQuestData(results.filter((d): d is QuestData => d !== null)))
       .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
       .finally(() => setLoading(false));
   }, [eventId, quests]);
