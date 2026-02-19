@@ -1,5 +1,5 @@
-import { type SignInInput, getCurrentUser, signIn, signOut } from "aws-amplify/auth";
-import { type ReactNode, createContext, useContext, useEffect, useState } from "react";
+import { getCurrentUser, type SignInInput, signIn, signOut } from "aws-amplify/auth";
+import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
 
 interface AuthContextValue {
   isAuthenticated: boolean;

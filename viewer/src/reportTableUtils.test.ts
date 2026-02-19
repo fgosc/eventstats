@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { getReporterName, sortReports } from "./reportTableUtils";
 import type { SortState } from "./reportTableUtils";
+import { getReporterName, sortReports } from "./reportTableUtils";
 import type { Report } from "./types";
 
 function makeReport(overrides: Partial<Report> = {}): Report {

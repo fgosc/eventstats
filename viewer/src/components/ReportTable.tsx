@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { createExcludedIdSet, isOutlier } from "../aggregate";
 import { formatItemHeader, formatNote, formatTimestamp } from "../formatters";
 import { useSortState } from "../hooks/useSortState";
-import { sortReports } from "../reportTableUtils";
 import type { SortKey } from "../reportTableUtils";
+import { sortReports } from "../reportTableUtils";
 import type { Exclusion, ItemOutlierStats, ItemStats, Report } from "../types";
 import {
   sortIndicator,

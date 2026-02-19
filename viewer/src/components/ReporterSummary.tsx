@@ -3,8 +3,8 @@ import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
 import { useFixedSortState } from "../hooks/useSortState";
 import { useToggleSet } from "../hooks/useToggleSet";
-import { DEFAULT_SORT, aggregateReporters, sortRows } from "../reporterSummaryUtils";
 import type { ReportDetail, SortKey } from "../reporterSummaryUtils";
+import { aggregateReporters, DEFAULT_SORT, sortRows } from "../reporterSummaryUtils";
 import type { ExclusionsMap, Quest, QuestData } from "../types";
 import { LoadingError } from "./LoadingError";
 import { StatsBar } from "./StatsBar";
@@ -28,7 +28,11 @@ function XIdLink({
   xId,
   href,
   children,
-}: { xId: string; href: string; children: React.ReactNode }) {
+}: {
+  xId: string;
+  href: string;
+  children: React.ReactNode;
+}) {
   if (!xId || xId === "anonymous") return <>{children}</>;
   return (
     <a href={href} target="_blank" rel="noopener noreferrer">
@@ -107,10 +111,10 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
       .finally(() => setLoading(false));
   }, [eventId, quests]);
 
-  if (loading || error) return <LoadingError loading={loading} error={error} />;
-
   const rawRows = useMemo(() => aggregateReporters(questData, exclusions), [questData, exclusions]);
   const rows = useMemo(() => sortRows(rawRows, sort), [rawRows, sort]);
+
+  if (loading || error) return <LoadingError loading={loading} error={error} />;
   const totalReporters = rows.length;
   const totalReports = rows.reduce((s, r) => s + r.reportCount, 0);
   const totalRuns = rows.reduce((s, r) => s + r.totalRuns, 0);
