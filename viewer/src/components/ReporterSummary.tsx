@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
 import { useFixedSortState } from "../hooks/useSortState";
+import { useToggleSet } from "../hooks/useToggleSet";
 import { DEFAULT_SORT, aggregateReporters, sortRows } from "../reporterSummaryUtils";
 import type { ReportDetail, SortKey } from "../reporterSummaryUtils";
 import type { ExclusionsMap, Quest, QuestData } from "../types";
@@ -82,7 +83,7 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { sort, toggleSort } = useFixedSortState<SortKey>(DEFAULT_SORT);
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const { set: expanded, toggle: toggleExpanded } = useToggleSet();
 
   useEffect(() => {
     setLoading(true);
@@ -144,14 +145,7 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
                     <td style={tdStyle}>
                       <button
                         type="button"
-                        onClick={() =>
-                          setExpanded((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(r.reporter)) next.delete(r.reporter);
-                            else next.add(r.reporter);
-                            return next;
-                          })
-                        }
+                        onClick={() => toggleExpanded(r.reporter)}
                         style={toggleBtnStyle}
                       >
                         {isExpanded ? "▼" : "▶"}
