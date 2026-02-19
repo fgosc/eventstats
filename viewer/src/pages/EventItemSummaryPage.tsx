@@ -5,6 +5,7 @@ import { aggregate } from "../aggregate";
 import { fetchQuestData } from "../api";
 import { EventItemSummaryView, type QuestExpected } from "../components/EventItemSummaryView";
 import { LoadingError } from "../components/LoadingError";
+import { parseLevel } from "../routeUtils";
 import { calcEventItemExpected, classifyStats } from "../summaryUtils";
 
 export function EventItemSummaryPage() {
@@ -24,7 +25,9 @@ export function EventItemSummaryPage() {
     setLoading(true);
     setError(null);
 
-    const sortedQuests = [...event.quests].sort((a, b) => Number(a.level) - Number(b.level));
+    const sortedQuests = [...event.quests].sort(
+      (a, b) => parseLevel(a.level) - parseLevel(b.level),
+    );
 
     Promise.all(
       sortedQuests.map((q) => fetchQuestData(event.eventId, q.questId, controller.signal)),

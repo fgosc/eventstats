@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useMatch, useNavigate, useParams } from "react-router-dom";
 import { fetchEvents, fetchExclusions } from "./api";
 import { formatPeriod } from "./formatters";
-import { getHighestQuest } from "./routeUtils";
+import { getHighestQuest, parseLevel } from "./routeUtils";
 import type { EventData, ExclusionsMap } from "./types";
 
 const navBtnStyle: React.CSSProperties = {
@@ -99,7 +99,7 @@ export function AppLayout() {
       {selectedEvent && selectedEvent.quests.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           {[...selectedEvent.quests]
-            .sort((a, b) => Number(a.level) - Number(b.level))
+            .sort((a, b) => parseLevel(a.level) - parseLevel(b.level))
             .map((q) => (
               <button
                 type="button"

@@ -6,7 +6,7 @@ export function getLatestEvent(events: EventData[]): EventData | undefined {
   )[0];
 }
 
-function parseLevel(level: string): number {
+export function parseLevel(level: string): number {
   const base = Number.parseInt(level, 10);
   return level.endsWith("+") ? base + 0.5 : base;
 }
