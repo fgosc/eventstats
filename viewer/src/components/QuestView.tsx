@@ -29,7 +29,9 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
         if (e instanceof DOMException && e.name === "AbortError") return;
         setError(e instanceof Error ? e.message : String(e));
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
     return () => controller.abort();
   }, [eventId, questId]);
 
