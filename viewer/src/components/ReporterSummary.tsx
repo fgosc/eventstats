@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
 import { useFixedSortState } from "../hooks/useSortState";
@@ -95,8 +95,8 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
 
   if (loading || error) return <LoadingError loading={loading} error={error} />;
 
-  const rawRows = aggregateReporters(questData, exclusions);
-  const rows = sortRows(rawRows, sort);
+  const rawRows = useMemo(() => aggregateReporters(questData, exclusions), [questData, exclusions]);
+  const rows = useMemo(() => sortRows(rawRows, sort), [rawRows, sort]);
   const totalReporters = rows.length;
   const totalReports = rows.reduce((s, r) => s + r.reportCount, 0);
   const totalRuns = rows.reduce((s, r) => s + r.totalRuns, 0);

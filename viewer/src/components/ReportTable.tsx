@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { createExcludedIdSet, isOutlier } from "../aggregate";
 import { formatTimestamp } from "../formatters";
 import { useSortState } from "../hooks/useSortState";
@@ -55,15 +56,19 @@ function formatItemHeader(name: string): React.ReactNode {
 
 export function ReportTable({ reports, exclusions, itemNames, outlierStats, stats }: Props) {
   const { sort, toggleSort } = useSortState<SortKey>();
-  const excludedIds = createExcludedIdSet(exclusions);
-  const exclusionMap = new Map(exclusions.map((e) => [e.reportId, e.reason]));
-
-  const outlierMap = new Map(outlierStats.map((s) => [s.itemName, s]));
-  const statsMap = new Map(stats.map((s) => [s.itemName, s]));
+  const excludedIds = useMemo(() => createExcludedIdSet(exclusions), [exclusions]);
+  const exclusionMap = useMemo(
+    () => new Map(exclusions.map((e) => [e.reportId, e.reason])),
+    [exclusions],
+  );
+  const outlierMap = useMemo(
+    () => new Map(outlierStats.map((s) => [s.itemName, s])),
+    [outlierStats],
+  );
+  const statsMap = useMemo(() => new Map(stats.map((s) => [s.itemName, s])), [stats]);
+  const sorted = useMemo(() => sortReports(reports, sort), [reports, sort]);
 
   if (reports.length === 0) return <p>報告なし</p>;
-
-  const sorted = sortReports(reports, sort);
 
   return (
     <div style={{ overflowX: "auto" }}>
