@@ -1,8 +1,8 @@
-import { useState } from "react";
 import { createExcludedIdSet, isOutlier } from "../aggregate";
 import { formatTimestamp } from "../formatters";
+import { useSortState } from "../hooks/useSortState";
 import { sortReports } from "../reportTableUtils";
-import type { SortKey, SortState } from "../reportTableUtils";
+import type { SortKey } from "../reportTableUtils";
 import type { Exclusion, ItemOutlierStats, ItemStats, Report } from "../types";
 import {
   sortIndicator,
@@ -54,7 +54,7 @@ function formatItemHeader(name: string): React.ReactNode {
 }
 
 export function ReportTable({ reports, exclusions, itemNames, outlierStats, stats }: Props) {
-  const [sort, setSort] = useState<SortState>(null);
+  const { sort, toggleSort } = useSortState<SortKey>();
   const excludedIds = createExcludedIdSet(exclusions);
   const exclusionMap = new Map(exclusions.map((e) => [e.reportId, e.reason]));
 
@@ -62,14 +62,6 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
   const statsMap = new Map(stats.map((s) => [s.itemName, s]));
 
   if (reports.length === 0) return <p>報告なし</p>;
-
-  const toggleSort = (key: SortKey) => {
-    setSort((prev) => {
-      if (!prev || prev.key !== key) return { key, dir: "asc" };
-      if (prev.dir === "asc") return { key, dir: "desc" };
-      return null;
-    });
-  };
 
   const sorted = sortReports(reports, sort);
 

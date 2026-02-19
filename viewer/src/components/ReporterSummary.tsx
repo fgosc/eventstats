@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
+import { useFixedSortState } from "../hooks/useSortState";
 import { DEFAULT_SORT, aggregateReporters, sortRows } from "../reporterSummaryUtils";
-import type { ReportDetail, SortKey, SortState } from "../reporterSummaryUtils";
+import type { ReportDetail, SortKey } from "../reporterSummaryUtils";
 import type { ExclusionsMap, Quest, QuestData } from "../types";
 import { LoadingError } from "./LoadingError";
 import { StatsBar } from "./StatsBar";
@@ -80,7 +81,7 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
   const [questData, setQuestData] = useState<QuestData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
+  const { sort, toggleSort } = useFixedSortState<SortKey>(DEFAULT_SORT);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -93,13 +94,6 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
   }, [eventId, quests]);
 
   if (loading || error) return <LoadingError loading={loading} error={error} />;
-
-  const toggleSort = (key: SortKey) => {
-    setSort((prev) => {
-      if (prev.key !== key) return { key, dir: "desc" };
-      return { key, dir: prev.dir === "desc" ? "asc" : "desc" };
-    });
-  };
 
   const rawRows = aggregateReporters(questData, exclusions);
   const rows = sortRows(rawRows, sort);
