@@ -1,3 +1,4 @@
+import { RE_EVENT_ITEM, RE_POINT, RE_QP } from "./constants";
 import type { Exclusion, ItemOutlierStats, ItemStats, Report } from "./types";
 
 const Z = 1.96; // 95% confidence
@@ -51,10 +52,6 @@ export function aggregate(reports: Report[], exclusions: Exclusion[]): ItemStats
 
   return stats;
 }
-
-const RE_EVENT_ITEM = /\(x(\d+)\)$/;
-const RE_POINT = /^ポイント\(\+(\d+)\)$/;
-const RE_QP = /^QP\(\+(\d+)\)$/;
 
 function isAlwaysTargetItem(itemName: string): boolean {
   return RE_EVENT_ITEM.test(itemName) || RE_POINT.test(itemName) || RE_QP.test(itemName);
