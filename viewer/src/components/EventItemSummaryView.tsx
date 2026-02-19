@@ -49,6 +49,7 @@ export function EventItemSummaryView({ questExpected }: Props) {
               <thead>
                 <tr>
                   <th style={thStyleQuest}>クエスト</th>
+                  <th style={thStyleNarrow}>合計枠数</th>
                   <th style={thStyleNarrow}>周回数</th>
                   <th style={thStyleNarrow}>枠数</th>
                   {bonusRange.map((n) => (
@@ -66,6 +67,7 @@ export function EventItemSummaryView({ questExpected }: Props) {
                       <td style={tdStyle}>Lv.{quest.level}</td>
                       {item ? (
                         <>
+                          <td style={tdStyleRight}>{item.totalSlots.toLocaleString()}</td>
                           <td style={tdStyleRight}>{item.totalRuns.toLocaleString()}</td>
                           <td style={tdStyleRight}>{item.slots.toFixed(2)}</td>
                           {bonusRange.map((n) => (
@@ -75,8 +77,8 @@ export function EventItemSummaryView({ questExpected }: Props) {
                           ))}
                         </>
                       ) : (
-                        // クエスト列は直前の <td> で描画済み。残り列は 周回数(1) + 枠数(1) + ボーナス列
-                        <td style={tdStyleRight} colSpan={bonusRange.length + 2}>
+                        // クエスト列は直前の <td> で描画済み。残り列は 合計枠数(1) + 周回数(1) + 枠数(1) + ボーナス列
+                        <td style={tdStyleRight} colSpan={bonusRange.length + 3}>
                           -
                         </td>
                       )}

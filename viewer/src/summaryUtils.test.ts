@@ -128,6 +128,8 @@ describe("calcEventItemExpected", () => {
     expect(result).toHaveLength(1);
     expect(result[0].baseName).toBe("ぐん肥");
     expect(result[0].totalRuns).toBe(100);
+    // totalSlots = 200 + 100 = 300
+    expect(result[0].totalSlots).toBe(300);
     // slots = 2.0 + 1.0 = 3.0
     expect(result[0].slots).toBeCloseTo(3.0);
     // base = 2.0 * 1 + 1.0 * 3 = 5.0
