@@ -4,7 +4,6 @@ import { tableStyle, tdStyle, tdStyleRight, thStyle } from "./tableUtils";
 
 export interface QuestExpected {
   quest: Quest;
-  totalRuns: number;
   data: EventItemExpected[];
 }
 
@@ -60,14 +59,14 @@ export function EventItemSummaryView({ questExpected }: Props) {
                 </tr>
               </thead>
               <tbody>
-                {questExpected.map(({ quest, totalRuns, data }) => {
+                {questExpected.map(({ quest, data }) => {
                   const item = data.find((d) => d.baseName === baseName);
                   return (
                     <tr key={quest.questId}>
                       <td style={tdStyle}>Lv.{quest.level}</td>
-                      <td style={tdStyleRight}>{totalRuns.toLocaleString()}</td>
                       {item ? (
                         <>
+                          <td style={tdStyleRight}>{item.totalRuns.toLocaleString()}</td>
                           <td style={tdStyleRight}>{item.slots.toFixed(2)}</td>
                           {bonusRange.map((n) => (
                             <td key={n} style={tdStyleRight}>
@@ -76,7 +75,8 @@ export function EventItemSummaryView({ questExpected }: Props) {
                           ))}
                         </>
                       ) : (
-                        <td style={tdStyleRight} colSpan={bonusRange.length + 1}>
+                        // クエスト列は直前の <td> で描画済み。残り列は 周回数(1) + 枠数(1) + ボーナス列
+                        <td style={tdStyleRight} colSpan={bonusRange.length + 2}>
                           -
                         </td>
                       )}

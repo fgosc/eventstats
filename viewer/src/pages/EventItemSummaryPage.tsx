@@ -22,20 +22,22 @@ export function EventItemSummaryPage() {
     setLoading(true);
     setError(null);
 
-    Promise.all(event.quests.map((q) => fetchQuestData(event.eventId, q.questId)))
+    const sortedQuests = [...event.quests].sort((a, b) => Number(a.level) - Number(b.level));
+
+    Promise.all(sortedQuests.map((q) => fetchQuestData(event.eventId, q.questId)))
       .then((results) => {
         const qe: QuestExpected[] = [];
-        for (let i = 0; i < event.quests.length; i++) {
+        for (let i = 0; i < sortedQuests.length; i++) {
           const data = results[i];
           if (data === null) continue;
 
-          const quest = event.quests[i];
+          const quest = sortedQuests[i];
           const questExclusions = exclusions[quest.questId] ?? [];
           const stats = aggregate(data.reports, questExclusions);
           const { eventItems } = classifyStats(stats);
           const expected = calcEventItemExpected(eventItems);
           if (expected.length > 0) {
-            qe.push({ quest, totalRuns: eventItems[0].totalRuns, data: expected });
+            qe.push({ quest, data: expected });
           }
         }
         setQuestExpected(qe);
