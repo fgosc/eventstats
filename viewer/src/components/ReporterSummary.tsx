@@ -24,6 +24,19 @@ interface Props {
   exclusions: ExclusionsMap;
 }
 
+function XIdLink({
+  xId,
+  href,
+  children,
+}: { xId: string; href: string; children: React.ReactNode }) {
+  if (!xId || xId === "anonymous") return <>{children}</>;
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      {children}
+    </a>
+  );
+}
+
 function DetailTable({ details }: { details: ReportDetail[] }) {
   const sorted = [...details].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
 
@@ -153,30 +166,17 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
                     </td>
                     <td style={tdStyleRight}>{i + 1}</td>
                     <td style={tdStyle}>
-                      {r.xId && r.xId !== "anonymous" ? (
-                        <a
-                          href={`https://fgodrop.max747.org/owners/${r.xId}/reports`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {r.reporter}
-                        </a>
-                      ) : (
-                        r.reporter
-                      )}
+                      <XIdLink
+                        xId={r.xId}
+                        href={`https://fgodrop.max747.org/owners/${r.xId}/reports`}
+                      >
+                        {r.reporter}
+                      </XIdLink>
                     </td>
                     <td style={tdStyle}>
-                      {r.xId && r.xId !== "anonymous" ? (
-                        <a
-                          href={`https://x.com/${r.xId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {r.xId}
-                        </a>
-                      ) : (
-                        r.xId
-                      )}
+                      <XIdLink xId={r.xId} href={`https://x.com/${r.xId}`}>
+                        {r.xId}
+                      </XIdLink>
                     </td>
                     <td style={tdStyleRight}>{r.reportCount.toLocaleString()}</td>
                     <td style={tdStyleRight}>{r.totalRuns.toLocaleString()}</td>
