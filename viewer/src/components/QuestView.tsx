@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { aggregate, calcOutlierStats, createExcludedIdSet } from "../aggregate";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
@@ -28,24 +28,39 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
       .finally(() => setLoading(false));
   }, [eventId, questId]);
 
+  const stats = useMemo(
+    () => (data ? aggregate(data.reports, exclusions) : []),
+    [data, exclusions],
+  );
+  const outlierStats = useMemo(
+    () => (data ? calcOutlierStats(data.reports, exclusions) : []),
+    [data, exclusions],
+  );
+  const excludedIds = useMemo(() => createExcludedIdSet(exclusions), [exclusions]);
+  const totalRuns = useMemo(
+    () =>
+      data
+        ? data.reports.filter((r) => !excludedIds.has(r.id)).reduce((sum, r) => sum + r.runcount, 0)
+        : 0,
+    [data, excludedIds],
+  );
+  const validCount = useMemo(
+    () => (data ? data.reports.filter((r) => !excludedIds.has(r.id)).length : 0),
+    [data, excludedIds],
+  );
+  const sortedItemNames = useMemo(() => {
+    if (!data) return [];
+    const itemNames = new Set<string>();
+    for (const report of data.reports) {
+      for (const key of Object.keys(report.items)) {
+        itemNames.add(key);
+      }
+    }
+    return [...itemNames];
+  }, [data]);
+
   if (loading || error) return <LoadingError loading={loading} error={error} />;
   if (!data) return <p>このクエストのデータはまだ登録されていません。</p>;
-
-  const stats = aggregate(data.reports, exclusions);
-  const outlierStats = calcOutlierStats(data.reports, exclusions);
-  const excludedIds = createExcludedIdSet(exclusions);
-  const totalRuns = data.reports
-    .filter((r) => !excludedIds.has(r.id))
-    .reduce((sum, r) => sum + r.runcount, 0);
-  const validCount = data.reports.filter((r) => !excludedIds.has(r.id)).length;
-
-  const itemNames = new Set<string>();
-  for (const report of data.reports) {
-    for (const key of Object.keys(report.items)) {
-      itemNames.add(key);
-    }
-  }
-  const sortedItemNames = [...itemNames];
 
   return (
     <div>
