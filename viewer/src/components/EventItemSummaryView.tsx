@@ -1,3 +1,4 @@
+import { MAX_EVENT_BONUS } from "../constants";
 import type { EventItemExpected } from "../summaryUtils";
 import type { Quest } from "../types";
 import { tableStyle, tdStyle, tdStyleRight, thStyle } from "./tableUtils";
@@ -10,8 +11,6 @@ export interface QuestExpected {
 interface Props {
   questExpected: QuestExpected[];
 }
-
-const MAX_EVENT_BONUS = 12;
 
 const thStyleNarrow: React.CSSProperties = {
   ...thStyle,

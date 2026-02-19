@@ -1,3 +1,4 @@
+import { MAX_EVENT_BONUS } from "../constants";
 import {
   calcEventItemExpected,
   classifyStats,
@@ -10,8 +11,6 @@ import { tableStyle, tdStyle, tdStyleRight, thStyle as thStyleBase } from "./tab
 interface Props {
   stats: ItemStats[];
 }
-
-const MAX_EVENT_BONUS = 12;
 
 function EventItemExpectedTable({ eventItems }: { eventItems: ItemStats[] }) {
   const rows = calcEventItemExpected(eventItems);
