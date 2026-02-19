@@ -32,13 +32,18 @@ export function AppLayout() {
   const eventItemSummaryMatch = useMatch("/events/:eventId/event-items");
 
   useEffect(() => {
-    Promise.all([fetchEvents(), fetchExclusions()])
+    const controller = new AbortController();
+    Promise.all([fetchEvents(controller.signal), fetchExclusions(controller.signal)])
       .then(([eventsRes, exclusionsRes]) => {
         setEvents(eventsRes.events);
         setExclusions(exclusionsRes);
       })
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, []);
 
   if (loading) return <p>読み込み中...</p>;

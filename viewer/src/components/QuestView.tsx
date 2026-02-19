@@ -20,12 +20,17 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
-    fetchQuestData(eventId, questId)
+    fetchQuestData(eventId, questId, controller.signal)
       .then(setData)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, [eventId, questId]);
 
   const stats = useMemo(

@@ -103,12 +103,17 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
   const { set: expanded, toggle: toggleExpanded } = useToggleSet();
 
   useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
-    Promise.all(quests.map((q) => fetchQuestData(eventId, q.questId)))
+    Promise.all(quests.map((q) => fetchQuestData(eventId, q.questId, controller.signal)))
       .then((results) => setQuestData(results.filter((d): d is QuestData => d !== null)))
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, [eventId, quests]);
 
   const rawRows = useMemo(() => aggregateReporters(questData, exclusions), [questData, exclusions]);

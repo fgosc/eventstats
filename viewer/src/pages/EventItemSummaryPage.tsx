@@ -20,12 +20,15 @@ export function EventItemSummaryPage() {
   useEffect(() => {
     if (!event) return;
 
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
 
     const sortedQuests = [...event.quests].sort((a, b) => Number(a.level) - Number(b.level));
 
-    Promise.all(sortedQuests.map((q) => fetchQuestData(event.eventId, q.questId)))
+    Promise.all(
+      sortedQuests.map((q) => fetchQuestData(event.eventId, q.questId, controller.signal)),
+    )
       .then((results) => {
         const qe: QuestExpected[] = [];
         for (let i = 0; i < sortedQuests.length; i++) {
@@ -43,8 +46,12 @@ export function EventItemSummaryPage() {
         }
         setQuestExpected(qe);
       })
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : String(e));
+      })
       .finally(() => setLoading(false));
+    return () => controller.abort();
   }, [event, exclusions]);
 
   if (!eventId) return null;
