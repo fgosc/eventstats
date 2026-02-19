@@ -4,6 +4,7 @@ import type { LayoutContext } from "../AppLayout";
 import { aggregate } from "../aggregate";
 import { fetchQuestData } from "../api";
 import { EventItemSummaryView, type QuestExpected } from "../components/EventItemSummaryView";
+import { LoadingError } from "../components/LoadingError";
 import { calcEventItemExpected, classifyStats } from "../summaryUtils";
 
 export function EventItemSummaryPage() {
@@ -48,8 +49,7 @@ export function EventItemSummaryPage() {
 
   if (!eventId) return null;
   if (!event) return <Navigate to="/" replace />;
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p style={{ color: "red" }}>エラー: {error}</p>;
+  if (loading || error) return <LoadingError loading={loading} error={error} />;
 
   return (
     <>

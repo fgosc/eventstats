@@ -3,6 +3,7 @@ import { aggregate, calcOutlierStats, createExcludedIdSet } from "../aggregate";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
 import type { Exclusion, QuestData } from "../types";
+import { LoadingError } from "./LoadingError";
 import { ReportTable } from "./ReportTable";
 import { StatsBar } from "./StatsBar";
 import { SummaryTable } from "./SummaryTable";
@@ -27,8 +28,7 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
       .finally(() => setLoading(false));
   }, [eventId, questId]);
 
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p style={{ color: "red" }}>エラー: {error}</p>;
+  if (loading || error) return <LoadingError loading={loading} error={error} />;
   if (!data) return <p>このクエストのデータはまだ登録されていません。</p>;
 
   const stats = aggregate(data.reports, exclusions);

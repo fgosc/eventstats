@@ -4,6 +4,7 @@ import { formatTimestamp } from "../formatters";
 import { DEFAULT_SORT, aggregateReporters, sortRows } from "../reporterSummaryUtils";
 import type { ReportDetail, SortKey, SortState } from "../reporterSummaryUtils";
 import type { ExclusionsMap, Quest, QuestData } from "../types";
+import { LoadingError } from "./LoadingError";
 import { StatsBar } from "./StatsBar";
 import {
   sortIndicator,
@@ -91,8 +92,7 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
       .finally(() => setLoading(false));
   }, [eventId, quests]);
 
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p style={{ color: "red" }}>エラー: {error}</p>;
+  if (loading || error) return <LoadingError loading={loading} error={error} />;
 
   const toggleSort = (key: SortKey) => {
     setSort((prev) => {
