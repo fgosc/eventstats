@@ -140,6 +140,10 @@ export function AppLayout() {
       )}
 
       <Outlet context={{ events, exclusions } satisfies LayoutContext} />
+
+      <footer style={{ marginTop: "2rem", color: "#999", fontSize: "0.75rem" }}>
+        rev: {__GIT_REVISION__}
+      </footer>
     </div>
   );
 }
