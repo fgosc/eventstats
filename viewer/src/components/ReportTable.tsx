@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { createExcludedIdSet, isOutlier } from "../aggregate";
-import { formatTimestamp } from "../formatters";
+import { formatItemHeader, formatNote, formatTimestamp } from "../formatters";
 import { useSortState } from "../hooks/useSortState";
 import { sortReports } from "../reportTableUtils";
 import type { SortKey } from "../reportTableUtils";
@@ -20,38 +20,6 @@ interface Props {
   itemNames: string[];
   outlierStats: ItemOutlierStats[];
   stats: ItemStats[];
-}
-
-const RE_FGOSCCNT = /https:\/\/fgojunks\.max747\.org\/fgosccnt\/results\/\S+/;
-const RE_MODIFIER = /(\((?:x|\+)\d+\))$/;
-
-function formatNote(note: string): React.ReactNode {
-  const m = RE_FGOSCCNT.exec(note);
-  if (!m) return note;
-  const before = note.slice(0, m.index);
-  const after = note.slice(m.index + m[0].length);
-  return (
-    <>
-      {before}
-      <a href={m[0]} target="_blank" rel="noopener noreferrer">
-        fgosccnt
-      </a>
-      {after}
-    </>
-  );
-}
-
-function formatItemHeader(name: string): React.ReactNode {
-  const m = RE_MODIFIER.exec(name);
-  if (!m) return name;
-  const base = name.slice(0, m.index);
-  return (
-    <>
-      {base}
-      <br />
-      {m[1]}
-    </>
-  );
 }
 
 export function ReportTable({ reports, exclusions, itemNames, outlierStats, stats }: Props) {
