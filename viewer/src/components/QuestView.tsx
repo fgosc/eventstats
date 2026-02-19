@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { aggregate, calcOutlierStats } from "../aggregate";
+import { aggregate, calcOutlierStats, createExcludedIdSet } from "../aggregate";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
 import type { Exclusion, QuestData } from "../types";
@@ -33,7 +33,7 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
 
   const stats = aggregate(data.reports, exclusions);
   const outlierStats = calcOutlierStats(data.reports, exclusions);
-  const excludedIds = new Set(exclusions.map((e) => e.reportId));
+  const excludedIds = createExcludedIdSet(exclusions);
   const totalRuns = data.reports
     .filter((r) => !excludedIds.has(r.id))
     .reduce((sum, r) => sum + r.runcount, 0);

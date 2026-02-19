@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { isOutlier } from "../aggregate";
+import { createExcludedIdSet, isOutlier } from "../aggregate";
 import { formatTimestamp } from "../formatters";
 import { sortReports } from "../reportTableUtils";
 import type { SortKey, SortState } from "../reportTableUtils";
@@ -55,7 +55,7 @@ function formatItemHeader(name: string): React.ReactNode {
 
 export function ReportTable({ reports, exclusions, itemNames, outlierStats, stats }: Props) {
   const [sort, setSort] = useState<SortState>(null);
-  const excludedIds = new Set(exclusions.map((e) => e.reportId));
+  const excludedIds = createExcludedIdSet(exclusions);
   const exclusionMap = new Map(exclusions.map((e) => [e.reportId, e.reason]));
 
   const outlierMap = new Map(outlierStats.map((s) => [s.itemName, s]));

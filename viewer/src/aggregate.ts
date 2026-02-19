@@ -16,8 +16,12 @@ function wilsonCI(successes: number, n: number): { lower: number; upper: number 
   };
 }
 
+export function createExcludedIdSet(exclusions: Exclusion[]): Set<string> {
+  return new Set(exclusions.map((e) => e.reportId));
+}
+
 export function aggregate(reports: Report[], exclusions: Exclusion[]): ItemStats[] {
-  const excludedIds = new Set(exclusions.map((e) => e.reportId));
+  const excludedIds = createExcludedIdSet(exclusions);
   const validReports = reports.filter((r) => !excludedIds.has(r.id));
 
   const itemNames = new Set<string>();
@@ -58,7 +62,7 @@ function isAlwaysTargetItem(itemName: string): boolean {
 }
 
 export function calcOutlierStats(reports: Report[], exclusions: Exclusion[]): ItemOutlierStats[] {
-  const excludedIds = new Set(exclusions.map((e) => e.reportId));
+  const excludedIds = createExcludedIdSet(exclusions);
   const validReports = reports.filter((r) => !excludedIds.has(r.id));
 
   const itemNames = new Set<string>();
