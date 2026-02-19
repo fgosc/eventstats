@@ -67,8 +67,8 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
         </tr>
       </thead>
       <tbody>
-        {sorted.map((d, i) => (
-          <tr key={i}>
+        {sorted.map((d) => (
+          <tr key={d.reportId}>
             <td style={tdStyleDetail}>
               <a
                 href={`https://fgodrop.max747.org/reports/${d.reportId}`}
