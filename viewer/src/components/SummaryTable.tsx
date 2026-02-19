@@ -153,7 +153,7 @@ export function SummaryTable({ stats }: Props) {
             <thead>
               <tr>
                 <th style={thStyleItem}>アイテム</th>
-                <th style={thStyle}>合計ドロップ</th>
+                <th style={thStyle}>合計枠数</th>
                 <th style={thStyle}>合計周回数</th>
                 <th style={thStyle}>1周あたり枠数</th>
               </tr>

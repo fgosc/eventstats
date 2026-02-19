@@ -51,7 +51,7 @@ export function EventItemSummaryView({ questExpected }: Props) {
                   <th style={thStyleQuest}>クエスト</th>
                   <th style={thStyleNarrow}>合計枠数</th>
                   <th style={thStyleNarrow}>周回数</th>
-                  <th style={thStyleNarrow}>枠数</th>
+                  <th style={thStyleNarrow}>枠数/周</th>
                   {bonusRange.map((n) => (
                     <th key={n} style={thStyleNarrow}>
                       +{n}
