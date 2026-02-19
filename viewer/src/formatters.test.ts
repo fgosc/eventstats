@@ -1,5 +1,12 @@
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, test } from "vitest";
-import { formatDateTime, formatPeriod, formatTimestamp } from "./formatters";
+import {
+  formatDateTime,
+  formatItemHeader,
+  formatNote,
+  formatPeriod,
+  formatTimestamp,
+} from "./formatters";
 
 describe("formatDateTime", () => {
   test("ISO 文字列を日本語ローカライズ形式に変換する", () => {
@@ -37,5 +44,46 @@ describe("formatPeriod", () => {
     });
     expect(result).toContain("〜");
     expect(result).toContain("2026");
+  });
+});
+
+describe("formatNote", () => {
+  test("fgosccnt URL がなければ元の文字列を返す", () => {
+    expect(formatNote("メモなし")).toBe("メモなし");
+  });
+
+  test("fgosccnt URL をリンク化する", () => {
+    const url = "https://fgojunks.max747.org/fgosccnt/results/abc123";
+    const html = renderToStaticMarkup(formatNote(`結果: ${url} 以上`));
+    expect(html).toContain(`href="${url}"`);
+    expect(html).toContain("fgosccnt");
+    expect(html).toContain("結果: ");
+    expect(html).toContain(" 以上");
+  });
+
+  test("URL のみの場合でもリンク化する", () => {
+    const url = "https://fgojunks.max747.org/fgosccnt/results/xyz";
+    const html = renderToStaticMarkup(formatNote(url));
+    expect(html).toContain(`href="${url}"`);
+  });
+});
+
+describe("formatItemHeader", () => {
+  test("修飾子がなければ元の文字列を返す", () => {
+    expect(formatItemHeader("騎士の誓い")).toBe("騎士の誓い");
+  });
+
+  test("(xN) 修飾子を改行で区切る", () => {
+    const html = renderToStaticMarkup(formatItemHeader("ぐん肥(x3)"));
+    expect(html).toContain("ぐん肥");
+    expect(html).toContain("<br/>");
+    expect(html).toContain("(x3)");
+  });
+
+  test("(+N) 修飾子を改行で区切る", () => {
+    const html = renderToStaticMarkup(formatItemHeader("ポイント(+600)"));
+    expect(html).toContain("ポイント");
+    expect(html).toContain("<br/>");
+    expect(html).toContain("(+600)");
   });
 });
