@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import type { SortDir } from "../types";
 
 /**
  * null 許容のソート状態フック。
@@ -6,7 +7,7 @@ import { useCallback, useState } from "react";
  * ReportTable 向け。
  */
 export function useSortState<K extends string>() {
-  const [sort, setSort] = useState<{ key: K; dir: "asc" | "desc" } | null>(null);
+  const [sort, setSort] = useState<{ key: K; dir: SortDir } | null>(null);
 
   const toggleSort = useCallback((key: K) => {
     setSort((prev) => {
@@ -24,7 +25,7 @@ export function useSortState<K extends string>() {
  * 同キー押下で desc ↔ asc をトグルし、別キー押下で desc から開始する。
  * ReporterSummary 向け。
  */
-export function useFixedSortState<K extends string>(initial: { key: K; dir: "asc" | "desc" }) {
+export function useFixedSortState<K extends string>(initial: { key: K; dir: SortDir }) {
   const [sort, setSort] = useState(initial);
 
   const toggleSort = useCallback((key: K) => {

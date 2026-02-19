@@ -1,4 +1,4 @@
-import type { ExclusionsMap, QuestData } from "./types";
+import type { ExclusionsMap, QuestData, SortDir } from "./types";
 
 export interface ReportDetail {
   reportId: string;
@@ -17,7 +17,6 @@ export interface ReporterRow {
 }
 
 export type SortKey = "reportCount" | "totalRuns";
-export type SortDir = "asc" | "desc";
 export type SortState = { key: SortKey; dir: SortDir };
 
 export const DEFAULT_SORT: SortState = { key: "totalRuns", dir: "desc" };
