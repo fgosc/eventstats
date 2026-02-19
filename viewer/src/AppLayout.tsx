@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useMatch, useNavigate, useParams } from "react-router-dom";
 import { fetchEvents, fetchExclusions } from "./api";
 import { formatPeriod } from "./formatters";
-import { getHighestQuest } from "./routeUtils";
+import { getHighestQuest, parseLevel } from "./routeUtils";
 import type { EventData, ExclusionsMap } from "./types";
 
 const navBtnStyle: React.CSSProperties = {
@@ -32,13 +32,20 @@ export function AppLayout() {
   const eventItemSummaryMatch = useMatch("/events/:eventId/event-items");
 
   useEffect(() => {
-    Promise.all([fetchEvents(), fetchExclusions()])
+    const controller = new AbortController();
+    Promise.all([fetchEvents(controller.signal), fetchExclusions(controller.signal)])
       .then(([eventsRes, exclusionsRes]) => {
         setEvents(eventsRes.events);
         setExclusions(exclusionsRes);
       })
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
-      .finally(() => setLoading(false));
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, []);
 
   if (loading) return <p>読み込み中...</p>;
@@ -92,7 +99,7 @@ export function AppLayout() {
       {selectedEvent && selectedEvent.quests.length > 0 && (
         <div style={{ marginBottom: "1rem" }}>
           {[...selectedEvent.quests]
-            .sort((a, b) => Number(a.level) - Number(b.level))
+            .sort((a, b) => parseLevel(a.level) - parseLevel(b.level))
             .map((q) => (
               <button
                 type="button"

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { aggregateReporters, sortRows } from "./reporterSummaryUtils";
 import type { ReporterRow, SortState } from "./reporterSummaryUtils";
+import { aggregateReporters, sortRows } from "./reporterSummaryUtils";
 import type { ExclusionsMap, QuestData } from "./types";
 
 function makeQuestData(

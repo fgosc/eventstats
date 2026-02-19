@@ -6,8 +6,13 @@ export function getLatestEvent(events: EventData[]): EventData | undefined {
   )[0];
 }
 
+export function parseLevel(level: string): number {
+  const base = Number.parseInt(level, 10);
+  return level.endsWith("+") ? base + 0.5 : base;
+}
+
 export function getHighestQuest(quests: Quest[]): Quest | undefined {
   if (quests.length === 0) return undefined;
-  const sorted = [...quests].sort((a, b) => Number(a.level) - Number(b.level));
+  const sorted = [...quests].sort((a, b) => parseLevel(a.level) - parseLevel(b.level));
   return sorted[sorted.length - 1];
 }

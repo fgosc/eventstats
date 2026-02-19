@@ -1,3 +1,4 @@
+import { RE_EVENT_ITEM, RE_POINT, RE_QP } from "./constants";
 import type { Exclusion, ItemOutlierStats, ItemStats, Report } from "./types";
 
 const Z = 1.96; // 95% confidence
@@ -15,8 +16,12 @@ function wilsonCI(successes: number, n: number): { lower: number; upper: number 
   };
 }
 
+export function createExcludedIdSet(exclusions: Exclusion[]): Set<string> {
+  return new Set(exclusions.map((e) => e.reportId));
+}
+
 export function aggregate(reports: Report[], exclusions: Exclusion[]): ItemStats[] {
-  const excludedIds = new Set(exclusions.map((e) => e.reportId));
+  const excludedIds = createExcludedIdSet(exclusions);
   const validReports = reports.filter((r) => !excludedIds.has(r.id));
 
   const itemNames = new Set<string>();
@@ -52,16 +57,12 @@ export function aggregate(reports: Report[], exclusions: Exclusion[]): ItemStats
   return stats;
 }
 
-const RE_EVENT_ITEM = /\(x(\d+)\)$/;
-const RE_POINT = /^ポイント\(\+(\d+)\)$/;
-const RE_QP = /^QP\(\+(\d+)\)$/;
-
 function isAlwaysTargetItem(itemName: string): boolean {
   return RE_EVENT_ITEM.test(itemName) || RE_POINT.test(itemName) || RE_QP.test(itemName);
 }
 
 export function calcOutlierStats(reports: Report[], exclusions: Exclusion[]): ItemOutlierStats[] {
-  const excludedIds = new Set(exclusions.map((e) => e.reportId));
+  const excludedIds = createExcludedIdSet(exclusions);
   const validReports = reports.filter((r) => !excludedIds.has(r.id));
 
   const itemNames = new Set<string>();

@@ -1,8 +1,5 @@
+import { RE_EVENT_ITEM, RE_POINT, RE_QP } from "./constants";
 import type { ItemStats } from "./types";
-
-const RE_BOX_COUNT = /\(x(\d+)\)$/;
-const RE_QP_BONUS = /^QP\(\+(\d+)\)$/;
-const RE_POINT_BONUS = /^ポイント\(\+(\d+)\)$/;
 
 export function classifyStats(stats: ItemStats[]) {
   const normal: ItemStats[] = [];
@@ -11,11 +8,11 @@ export function classifyStats(stats: ItemStats[]) {
   const qp: ItemStats[] = [];
 
   for (const s of stats) {
-    if (RE_BOX_COUNT.test(s.itemName)) {
+    if (RE_EVENT_ITEM.test(s.itemName)) {
       eventItems.push(s);
-    } else if (RE_QP_BONUS.test(s.itemName)) {
+    } else if (RE_QP.test(s.itemName)) {
       qp.push(s);
-    } else if (RE_POINT_BONUS.test(s.itemName)) {
+    } else if (RE_POINT.test(s.itemName)) {
       points.push(s);
     } else {
       normal.push(s);
@@ -26,19 +23,19 @@ export function classifyStats(stats: ItemStats[]) {
 }
 
 export function extractBaseName(name: string): string {
-  const mBox = RE_BOX_COUNT.exec(name);
+  const mBox = RE_EVENT_ITEM.exec(name);
   if (mBox) return name.slice(0, mBox.index);
-  if (RE_POINT_BONUS.test(name)) return "ポイント";
-  if (RE_QP_BONUS.test(name)) return "QP";
+  if (RE_POINT.test(name)) return "ポイント";
+  if (RE_QP.test(name)) return "QP";
   return name;
 }
 
 export function extractModifier(name: string): number {
-  const mBox = RE_BOX_COUNT.exec(name);
+  const mBox = RE_EVENT_ITEM.exec(name);
   if (mBox) return Number.parseInt(mBox[1], 10);
-  const mPoint = RE_POINT_BONUS.exec(name);
+  const mPoint = RE_POINT.exec(name);
   if (mPoint) return Number.parseInt(mPoint[1], 10);
-  const mQp = RE_QP_BONUS.exec(name);
+  const mQp = RE_QP.exec(name);
   if (mQp) return Number.parseInt(mQp[1], 10);
   return 0;
 }

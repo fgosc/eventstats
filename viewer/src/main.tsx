@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Navigate, RouterProvider, createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom";
 import { AppLayout } from "./AppLayout";
 import { EventItemSummaryPage } from "./pages/EventItemSummaryPage";
 import { EventRedirect } from "./pages/EventRedirect";

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
-import { aggregate, calcOutlierStats } from "../aggregate";
+import { useEffect, useMemo, useState } from "react";
+import { aggregate, calcOutlierStats, createExcludedIdSet } from "../aggregate";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
 import type { Exclusion, QuestData } from "../types";
+import { LoadingError } from "./LoadingError";
 import { ReportTable } from "./ReportTable";
 import { StatsBar } from "./StatsBar";
 import { SummaryTable } from "./SummaryTable";
@@ -19,33 +20,54 @@ export function QuestView({ eventId, questId, exclusions }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
-    fetchQuestData(eventId, questId)
+    fetchQuestData(eventId, questId, controller.signal)
       .then(setData)
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
-      .finally(() => setLoading(false));
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, [eventId, questId]);
 
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p style={{ color: "red" }}>エラー: {error}</p>;
-  if (!data) return <p>このクエストのデータはまだ登録されていません。</p>;
-
-  const stats = aggregate(data.reports, exclusions);
-  const outlierStats = calcOutlierStats(data.reports, exclusions);
-  const excludedIds = new Set(exclusions.map((e) => e.reportId));
-  const totalRuns = data.reports
-    .filter((r) => !excludedIds.has(r.id))
-    .reduce((sum, r) => sum + r.runcount, 0);
-  const validCount = data.reports.filter((r) => !excludedIds.has(r.id)).length;
-
-  const itemNames = new Set<string>();
-  for (const report of data.reports) {
-    for (const key of Object.keys(report.items)) {
-      itemNames.add(key);
+  const stats = useMemo(
+    () => (data ? aggregate(data.reports, exclusions) : []),
+    [data, exclusions],
+  );
+  const outlierStats = useMemo(
+    () => (data ? calcOutlierStats(data.reports, exclusions) : []),
+    [data, exclusions],
+  );
+  const excludedIds = useMemo(() => createExcludedIdSet(exclusions), [exclusions]);
+  const totalRuns = useMemo(
+    () =>
+      data
+        ? data.reports.filter((r) => !excludedIds.has(r.id)).reduce((sum, r) => sum + r.runcount, 0)
+        : 0,
+    [data, excludedIds],
+  );
+  const validCount = useMemo(
+    () => (data ? data.reports.filter((r) => !excludedIds.has(r.id)).length : 0),
+    [data, excludedIds],
+  );
+  const sortedItemNames = useMemo(() => {
+    if (!data) return [];
+    const itemNames = new Set<string>();
+    for (const report of data.reports) {
+      for (const key of Object.keys(report.items)) {
+        itemNames.add(key);
+      }
     }
-  }
-  const sortedItemNames = [...itemNames];
+    return [...itemNames];
+  }, [data]);
+
+  if (loading || error) return <LoadingError loading={loading} error={error} />;
+  if (!data) return <p>このクエストのデータはまだ登録されていません。</p>;
 
   return (
     <div>

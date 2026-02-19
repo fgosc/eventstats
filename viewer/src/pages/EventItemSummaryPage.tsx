@@ -4,6 +4,8 @@ import type { LayoutContext } from "../AppLayout";
 import { aggregate } from "../aggregate";
 import { fetchQuestData } from "../api";
 import { EventItemSummaryView, type QuestExpected } from "../components/EventItemSummaryView";
+import { LoadingError } from "../components/LoadingError";
+import { parseLevel } from "../routeUtils";
 import { calcEventItemExpected, classifyStats } from "../summaryUtils";
 
 export function EventItemSummaryPage() {
@@ -19,12 +21,17 @@ export function EventItemSummaryPage() {
   useEffect(() => {
     if (!event) return;
 
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
 
-    const sortedQuests = [...event.quests].sort((a, b) => Number(a.level) - Number(b.level));
+    const sortedQuests = [...event.quests].sort(
+      (a, b) => parseLevel(a.level) - parseLevel(b.level),
+    );
 
-    Promise.all(sortedQuests.map((q) => fetchQuestData(event.eventId, q.questId)))
+    Promise.all(
+      sortedQuests.map((q) => fetchQuestData(event.eventId, q.questId, controller.signal)),
+    )
       .then((results) => {
         const qe: QuestExpected[] = [];
         for (let i = 0; i < sortedQuests.length; i++) {
@@ -42,14 +49,19 @@ export function EventItemSummaryPage() {
         }
         setQuestExpected(qe);
       })
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
-      .finally(() => setLoading(false));
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, [event, exclusions]);
 
   if (!eventId) return null;
   if (!event) return <Navigate to="/" replace />;
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p style={{ color: "red" }}>エラー: {error}</p>;
+  if (loading || error) return <LoadingError loading={loading} error={error} />;
 
   return (
     <>

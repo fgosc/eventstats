@@ -46,6 +46,8 @@ export interface Exclusion {
 
 export type ExclusionsMap = Record<string, Exclusion[]>;
 
+export type SortDir = "asc" | "desc";
+
 export interface ItemStats {
   itemName: string;
   totalDrops: number;

@@ -1,7 +1,6 @@
-import type { Report } from "./types";
+import type { Report, SortDir } from "./types";
 
 export type SortKey = "reporter" | "runcount" | "timestamp";
-export type SortDir = "asc" | "desc";
 export type SortState = { key: SortKey; dir: SortDir } | null;
 
 export function getReporterName(r: Report): string {

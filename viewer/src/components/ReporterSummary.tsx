@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
-import { DEFAULT_SORT, aggregateReporters, sortRows } from "../reporterSummaryUtils";
-import type { ReportDetail, SortKey, SortState } from "../reporterSummaryUtils";
+import { useFixedSortState } from "../hooks/useSortState";
+import { useToggleSet } from "../hooks/useToggleSet";
+import type { ReportDetail, SortKey } from "../reporterSummaryUtils";
+import { aggregateReporters, DEFAULT_SORT, sortRows } from "../reporterSummaryUtils";
 import type { ExclusionsMap, Quest, QuestData } from "../types";
+import { LoadingError } from "./LoadingError";
 import { StatsBar } from "./StatsBar";
 import {
   sortIndicator,
@@ -19,6 +22,23 @@ interface Props {
   eventId: string;
   quests: Quest[];
   exclusions: ExclusionsMap;
+}
+
+function XIdLink({
+  xId,
+  href,
+  children,
+}: {
+  xId: string;
+  href: string;
+  children: React.ReactNode;
+}) {
+  if (!xId || xId === "anonymous") return <>{children}</>;
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer">
+      {children}
+    </a>
+  );
 }
 
 function DetailTable({ details }: { details: ReportDetail[] }) {
@@ -47,8 +67,8 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
         </tr>
       </thead>
       <tbody>
-        {sorted.map((d, i) => (
-          <tr key={i}>
+        {sorted.map((d) => (
+          <tr key={d.reportId}>
             <td style={tdStyleDetail}>
               <a
                 href={`https://fgodrop.max747.org/reports/${d.reportId}`}
@@ -79,30 +99,29 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
   const [questData, setQuestData] = useState<QuestData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const { sort, toggleSort } = useFixedSortState<SortKey>(DEFAULT_SORT);
+  const { set: expanded, toggle: toggleExpanded } = useToggleSet();
 
   useEffect(() => {
+    const controller = new AbortController();
     setLoading(true);
     setError(null);
-    Promise.all(quests.map((q) => fetchQuestData(eventId, q.questId)))
+    Promise.all(quests.map((q) => fetchQuestData(eventId, q.questId, controller.signal)))
       .then((results) => setQuestData(results.filter((d): d is QuestData => d !== null)))
-      .catch((e: unknown) => setError(e instanceof Error ? e.message : String(e)))
-      .finally(() => setLoading(false));
+      .catch((e: unknown) => {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        setError(e instanceof Error ? e.message : String(e));
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setLoading(false);
+      });
+    return () => controller.abort();
   }, [eventId, quests]);
 
-  if (loading) return <p>読み込み中...</p>;
-  if (error) return <p style={{ color: "red" }}>エラー: {error}</p>;
+  const rawRows = useMemo(() => aggregateReporters(questData, exclusions), [questData, exclusions]);
+  const rows = useMemo(() => sortRows(rawRows, sort), [rawRows, sort]);
 
-  const toggleSort = (key: SortKey) => {
-    setSort((prev) => {
-      if (prev.key !== key) return { key, dir: "desc" };
-      return { key, dir: prev.dir === "desc" ? "asc" : "desc" };
-    });
-  };
-
-  const rawRows = aggregateReporters(questData, exclusions);
-  const rows = sortRows(rawRows, sort);
+  if (loading || error) return <LoadingError loading={loading} error={error} />;
   const totalReporters = rows.length;
   const totalReports = rows.reduce((s, r) => s + r.reportCount, 0);
   const totalRuns = rows.reduce((s, r) => s + r.totalRuns, 0);
@@ -150,14 +169,7 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
                     <td style={tdStyle}>
                       <button
                         type="button"
-                        onClick={() =>
-                          setExpanded((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(r.reporter)) next.delete(r.reporter);
-                            else next.add(r.reporter);
-                            return next;
-                          })
-                        }
+                        onClick={() => toggleExpanded(r.reporter)}
                         style={toggleBtnStyle}
                       >
                         {isExpanded ? "▼" : "▶"}
@@ -165,30 +177,17 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
                     </td>
                     <td style={tdStyleRight}>{i + 1}</td>
                     <td style={tdStyle}>
-                      {r.xId && r.xId !== "anonymous" ? (
-                        <a
-                          href={`https://fgodrop.max747.org/owners/${r.xId}/reports`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {r.reporter}
-                        </a>
-                      ) : (
-                        r.reporter
-                      )}
+                      <XIdLink
+                        xId={r.xId}
+                        href={`https://fgodrop.max747.org/owners/${r.xId}/reports`}
+                      >
+                        {r.reporter}
+                      </XIdLink>
                     </td>
                     <td style={tdStyle}>
-                      {r.xId && r.xId !== "anonymous" ? (
-                        <a
-                          href={`https://x.com/${r.xId}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {r.xId}
-                        </a>
-                      ) : (
-                        r.xId
-                      )}
+                      <XIdLink xId={r.xId} href={`https://x.com/${r.xId}`}>
+                        {r.xId}
+                      </XIdLink>
                     </td>
                     <td style={tdStyleRight}>{r.reportCount.toLocaleString()}</td>
                     <td style={tdStyleRight}>{r.totalRuns.toLocaleString()}</td>

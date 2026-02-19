@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { isOutlier } from "../aggregate";
-import { formatTimestamp } from "../formatters";
+import { useMemo } from "react";
+import { createExcludedIdSet, isOutlier } from "../aggregate";
+import { formatItemHeader, formatNote, formatTimestamp } from "../formatters";
+import { useSortState } from "../hooks/useSortState";
+import type { SortKey } from "../reportTableUtils";
 import { sortReports } from "../reportTableUtils";
-import type { SortKey, SortState } from "../reportTableUtils";
 import type { Exclusion, ItemOutlierStats, ItemStats, Report } from "../types";
 import {
   sortIndicator,
@@ -21,57 +22,21 @@ interface Props {
   stats: ItemStats[];
 }
 
-const RE_FGOSCCNT = /https:\/\/fgojunks\.max747\.org\/fgosccnt\/results\/\S+/;
-const RE_MODIFIER = /(\((?:x|\+)\d+\))$/;
-
-function formatNote(note: string): React.ReactNode {
-  const m = RE_FGOSCCNT.exec(note);
-  if (!m) return note;
-  const before = note.slice(0, m.index);
-  const after = note.slice(m.index + m[0].length);
-  return (
-    <>
-      {before}
-      <a href={m[0]} target="_blank" rel="noopener noreferrer">
-        fgosccnt
-      </a>
-      {after}
-    </>
-  );
-}
-
-function formatItemHeader(name: string): React.ReactNode {
-  const m = RE_MODIFIER.exec(name);
-  if (!m) return name;
-  const base = name.slice(0, m.index);
-  return (
-    <>
-      {base}
-      <br />
-      {m[1]}
-    </>
-  );
-}
-
 export function ReportTable({ reports, exclusions, itemNames, outlierStats, stats }: Props) {
-  const [sort, setSort] = useState<SortState>(null);
-  const excludedIds = new Set(exclusions.map((e) => e.reportId));
-  const exclusionMap = new Map(exclusions.map((e) => [e.reportId, e.reason]));
-
-  const outlierMap = new Map(outlierStats.map((s) => [s.itemName, s]));
-  const statsMap = new Map(stats.map((s) => [s.itemName, s]));
+  const { sort, toggleSort } = useSortState<SortKey>();
+  const excludedIds = useMemo(() => createExcludedIdSet(exclusions), [exclusions]);
+  const exclusionMap = useMemo(
+    () => new Map(exclusions.map((e) => [e.reportId, e.reason])),
+    [exclusions],
+  );
+  const outlierMap = useMemo(
+    () => new Map(outlierStats.map((s) => [s.itemName, s])),
+    [outlierStats],
+  );
+  const statsMap = useMemo(() => new Map(stats.map((s) => [s.itemName, s])), [stats]);
+  const sorted = useMemo(() => sortReports(reports, sort), [reports, sort]);
 
   if (reports.length === 0) return <p>報告なし</p>;
-
-  const toggleSort = (key: SortKey) => {
-    setSort((prev) => {
-      if (!prev || prev.key !== key) return { key, dir: "asc" };
-      if (prev.dir === "asc") return { key, dir: "desc" };
-      return null;
-    });
-  };
-
-  const sorted = sortReports(reports, sort);
 
   return (
     <div style={{ overflowX: "auto" }}>
