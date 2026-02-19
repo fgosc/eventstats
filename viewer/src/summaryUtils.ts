@@ -55,26 +55,42 @@ export function sortByBaseAndModifier(items: ItemStats[]): ItemStats[] {
 
 export interface EventItemExpected {
   baseName: string;
+  totalRuns: number;
+  totalSlots: number;
   slots: number;
   base: number;
 }
 
 export function calcEventItemExpected(eventItems: ItemStats[]): EventItemExpected[] {
-  const grouped = new Map<string, { slots: number; base: number }>();
+  const grouped = new Map<
+    string,
+    { slots: number; base: number; totalRuns: number; totalSlots: number }
+  >();
 
   for (const s of eventItems) {
     if (s.totalRuns === 0) continue;
     const baseName = extractBaseName(s.itemName);
     const multiplier = extractModifier(s.itemName);
-    const dropsPerRun = s.totalDrops / s.totalRuns;
+    const slotsPerRun = s.totalDrops / s.totalRuns;
 
-    const entry = grouped.get(baseName) ?? { slots: 0, base: 0 };
-    entry.slots += dropsPerRun;
-    entry.base += dropsPerRun * multiplier;
+    const entry = grouped.get(baseName) ?? { slots: 0, base: 0, totalRuns: 0, totalSlots: 0 };
+    entry.slots += slotsPerRun;
+    entry.base += slotsPerRun * multiplier;
+    entry.totalSlots += s.totalDrops;
+    // 同一 baseName のキー（例: "ミトン(x1)" と "ミトン(x3)"）は本来 totalRuns が同値のはずだが、
+    // 一部の報告でいずれかのキーが未入力だと aggregate() がその報告の値を null 扱いにするため
+    // totalRuns がキーごとにずれる場合がある。その際は最大値を採用する。
+    entry.totalRuns = Math.max(entry.totalRuns, s.totalRuns);
     grouped.set(baseName, entry);
   }
 
   return [...grouped.entries()]
-    .map(([baseName, { slots, base }]) => ({ baseName, slots, base }))
+    .map(([baseName, { slots, base, totalRuns, totalSlots }]) => ({
+      baseName,
+      totalRuns,
+      totalSlots,
+      slots,
+      base,
+    }))
     .sort((a, b) => a.baseName.localeCompare(b.baseName));
 }

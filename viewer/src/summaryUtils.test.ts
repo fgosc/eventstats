@@ -127,6 +127,9 @@ describe("calcEventItemExpected", () => {
     const result = calcEventItemExpected(items);
     expect(result).toHaveLength(1);
     expect(result[0].baseName).toBe("ぐん肥");
+    expect(result[0].totalRuns).toBe(100);
+    // totalSlots = 200 + 100 = 300
+    expect(result[0].totalSlots).toBe(300);
     // slots = 2.0 + 1.0 = 3.0
     expect(result[0].slots).toBeCloseTo(3.0);
     // base = 2.0 * 1 + 1.0 * 3 = 5.0
@@ -138,6 +141,18 @@ describe("calcEventItemExpected", () => {
     const result = calcEventItemExpected(items);
     expect(result).toHaveLength(2);
     expect(result.map((r) => r.baseName)).toEqual(["ぐん肥", "極光"]);
+    expect(result[0].totalRuns).toBe(100); // ぐん肥
+    expect(result[1].totalRuns).toBe(100); // 極光
+  });
+
+  test("同一 baseName で totalRuns が異なる場合は最大値を使う", () => {
+    // 80周の報告で "三角巾(x3)" だけ入力され "三角巾(x1)" が未入力だった場合、
+    // aggregate() は "三角巾(x1)" をその報告で null 扱いにするため
+    // "三角巾(x1)" の totalRuns が "三角巾(x3)" より小さくなる。
+    const items = [makeStats("三角巾(x1)", 200, 100), makeStats("三角巾(x3)", 80, 80)];
+    const result = calcEventItemExpected(items);
+    expect(result).toHaveLength(1);
+    expect(result[0].totalRuns).toBe(100);
   });
 
   test("totalRuns=0 のアイテムをスキップする", () => {
