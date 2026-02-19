@@ -28,3 +28,4 @@ terraform apply
 ```
 
 Lambda コードの変更は `terraform apply` でデプロイされる（`archive_file` で自動 zip 化）。
+terraform の実行は手動。
