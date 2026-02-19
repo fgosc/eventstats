@@ -60,11 +60,10 @@ describe("getHighestQuest", () => {
     expect(getHighestQuest([mid, low, high])).toBe(high);
   });
 
-  it("90+ のような文字列レベルを正しく扱う", () => {
+  it("90+ は 90 より高いレベルとして扱う", () => {
     const q90 = makeQuest("q90", "90");
     const q90plus = makeQuest("q90+", "90+");
-    // Number("90+") は NaN なので、ソート結果は実装依存だが壊れないことを確認
-    expect(getHighestQuest([q90, q90plus])).toBeDefined();
+    expect(getHighestQuest([q90, q90plus])).toBe(q90plus);
   });
 
   it("元の配列を変更しない", () => {
