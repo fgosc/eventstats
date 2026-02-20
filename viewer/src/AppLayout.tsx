@@ -1,8 +1,8 @@
 import type React from "react";
-import { useEffect, useState } from "react";
 import { Outlet, useMatch, useNavigate, useParams } from "react-router-dom";
 import { fetchEvents, fetchExclusions } from "./api";
 import { formatPeriod } from "./formatters";
+import { useFetchData } from "./hooks/useFetchData";
 import { getHighestQuest, parseLevel } from "./routeUtils";
 import type { EventData, ExclusionsMap } from "./types";
 
@@ -21,32 +21,23 @@ export interface LayoutContext {
 }
 
 export function AppLayout() {
-  const [events, setEvents] = useState<EventData[]>([]);
-  const [exclusions, setExclusions] = useState<ExclusionsMap>({});
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, loading, error } = useFetchData(
+    async (signal) => {
+      const [eventsRes, exclusionsRes] = await Promise.all([
+        fetchEvents(signal),
+        fetchExclusions(signal),
+      ]);
+      return { events: eventsRes.events, exclusions: exclusionsRes };
+    },
+    [],
+    { events: [] as EventData[], exclusions: {} as ExclusionsMap },
+  );
+  const { events, exclusions } = data;
 
   const navigate = useNavigate();
   const { eventId, questId } = useParams<{ eventId: string; questId: string }>();
   const reportersMatch = useMatch("/events/:eventId/reporters");
   const eventItemSummaryMatch = useMatch("/events/:eventId/event-items");
-
-  useEffect(() => {
-    const controller = new AbortController();
-    Promise.all([fetchEvents(controller.signal), fetchExclusions(controller.signal)])
-      .then(([eventsRes, exclusionsRes]) => {
-        setEvents(eventsRes.events);
-        setExclusions(exclusionsRes);
-      })
-      .catch((e: unknown) => {
-        if (e instanceof DOMException && e.name === "AbortError") return;
-        setError(e instanceof Error ? e.message : String(e));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, []);
 
   if (loading) return <p>読み込み中...</p>;
   if (error) return <p style={{ color: "red" }}>エラー: {error}</p>;
