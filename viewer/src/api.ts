@@ -1,6 +1,10 @@
 import type { EventsResponse, ExclusionsMap, QuestData } from "./types";
 
-const DATA_URL = import.meta.env.VITE_DATA_URL as string;
+const DATA_URL: string = (() => {
+  const url = import.meta.env.VITE_DATA_URL;
+  if (!url) throw new Error("VITE_DATA_URL is not set");
+  return url;
+})();
 
 export async function fetchEvents(signal?: AbortSignal): Promise<EventsResponse> {
   const res = await fetch(`${DATA_URL}/events.json`, { signal });
