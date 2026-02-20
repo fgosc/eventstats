@@ -14,6 +14,11 @@ HARVEST_ALL_URL = "https://fgojunks.max747.org/harvest/contents/quest/all.json"
 
 
 def lambda_handler(event, context):
+    """管理 API Lambda のエントリーポイント。
+
+    HTTP メソッドとパスに基づいてルーティングし、対応するハンドラ関数を呼び出す。
+    未定義のルートは 404、ハンドラ内の例外は 500 を返す。
+    """
     method = event["requestContext"]["http"]["method"]
     path = event["requestContext"]["http"]["path"]
 
@@ -45,6 +50,7 @@ def lambda_handler(event, context):
 
 
 def read_json(key):
+    """S3 から指定キーの JSON を読み込む。キーが存在しない場合は None を返す。"""
     try:
         obj = s3.get_object(Bucket=BUCKET, Key=key)
         return json.loads(obj["Body"].read().decode("utf-8"))
@@ -55,6 +61,7 @@ def read_json(key):
 
 
 def write_json(key, data):
+    """data を JSON シリアライズして S3 の指定キーに書き込む。"""
     s3.put_object(
         Bucket=BUCKET,
         Key=key,
@@ -67,6 +74,7 @@ def write_json(key, data):
 
 
 def get_events():
+    """イベント一覧を返す。events.json が存在しない場合は空のイベントリストを返す。"""
     data = read_json(EVENTS_KEY)
     if data is None:
         data = {"events": []}
@@ -74,6 +82,7 @@ def get_events():
 
 
 def post_event(body):
+    """イベントを新規作成する。eventId が未指定または空の場合は UUID を自動生成する。"""
     data = read_json(EVENTS_KEY)
     if data is None:
         data = {"events": []}
@@ -87,6 +96,7 @@ def post_event(body):
 
 
 def put_event(event_id, body):
+    """指定 eventId のイベントを更新する。イベントが存在しない場合は 404 を返す。"""
     data = read_json(EVENTS_KEY)
     if data is None:
         return response(404, {"error": "Event not found"})
@@ -102,6 +112,7 @@ def put_event(event_id, body):
 
 
 def delete_event(event_id):
+    """指定 eventId のイベントを削除する。イベントが存在しない場合は 404 を返す。"""
     data = read_json(EVENTS_KEY)
     if data is None:
         return response(404, {"error": "Event not found"})
@@ -119,6 +130,7 @@ def delete_event(event_id):
 
 
 def get_exclusions(quest_id):
+    """指定クエストの除外リストを返す。exclusions.json が存在しない場合は空リストを返す。"""
     data = read_json(EXCLUSIONS_KEY)
     if data is None:
         data = {}
@@ -127,6 +139,7 @@ def get_exclusions(quest_id):
 
 
 def put_exclusions(quest_id, body):
+    """指定クエストの除外リストを更新する（全件置き換え）。"""
     data = read_json(EXCLUSIONS_KEY)
     if data is None:
         data = {}
@@ -140,6 +153,7 @@ def put_exclusions(quest_id, body):
 
 
 def get_harvest_quests():
+    """Harvest API から全クエスト一覧を取得してそのまま返す（プロキシ）。"""
     with urlopen(HARVEST_ALL_URL) as resp:
         data = json.loads(resp.read().decode("utf-8"))
     return response(200, data)
@@ -149,6 +163,7 @@ def get_harvest_quests():
 
 
 def response(status_code, body):
+    """API Gateway (HTTP API) 互換のレスポンス辞書を生成する。"""
     return {
         "statusCode": status_code,
         "headers": {"Content-Type": "application/json"},

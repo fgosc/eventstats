@@ -35,6 +35,7 @@ export function formatItemHeader(name: string): ReactNode {
   );
 }
 
+/** ISO 形式の日時文字列を日本時間の「年/月/日 時:分」表記に変換する。 */
 export function formatDateTime(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleString("ja-JP", {
@@ -47,10 +48,12 @@ export function formatDateTime(iso: string): string {
   });
 }
 
+/** ISO 形式の日時文字列を日本時間のロケール文字列（秒まで）に変換する。 */
 export function formatTimestamp(iso: string): string {
   return new Date(iso).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
 }
 
+/** イベント期間を「開始日時 〜 終了日時」形式の文字列に変換する。 */
 export function formatPeriod(period: EventPeriod): string {
   return `${formatDateTime(period.start)} 〜 ${formatDateTime(period.end)}`;
 }

@@ -1,6 +1,12 @@
 import { RE_EVENT_ITEM, RE_POINT, RE_QP } from "./constants";
 import type { ItemStats } from "./types";
 
+/**
+ * アイテム統計リストを種別ごとに分類する。
+ * アイテム名のパターン（RE_EVENT_ITEM / RE_POINT / RE_QP）で判定し、
+ * 該当しないものは通常素材（normal）に分類する。
+ * @returns `{ normal, eventItems, points, qp }` の各配列
+ */
 export function classifyStats(stats: ItemStats[]) {
   const normal: ItemStats[] = [];
   const eventItems: ItemStats[] = [];
@@ -22,6 +28,13 @@ export function classifyStats(stats: ItemStats[]) {
   return { normal, eventItems, points, qp };
 }
 
+/**
+ * アイテム名から修飾子部分を除いたベース名を返す。
+ * - "ミトン(x3)" → "ミトン"
+ * - "ポイント(+600)" → "ポイント"
+ * - "QP(+150000)" → "QP"
+ * - 修飾子なし → そのまま返す
+ */
 export function extractBaseName(name: string): string {
   const mBox = RE_EVENT_ITEM.exec(name);
   if (mBox) return name.slice(0, mBox.index);
@@ -30,6 +43,13 @@ export function extractBaseName(name: string): string {
   return name;
 }
 
+/**
+ * アイテム名から修飾子の数値を取り出す。
+ * - "ミトン(x3)" → 3（個数）
+ * - "ポイント(+600)" → 600（加算量）
+ * - "QP(+150000)" → 150000（加算量）
+ * - 修飾子なし → 0
+ */
 export function extractModifier(name: string): number {
   const mBox = RE_EVENT_ITEM.exec(name);
   if (mBox) return Number.parseInt(mBox[1], 10);
@@ -40,6 +60,10 @@ export function extractModifier(name: string): number {
   return 0;
 }
 
+/**
+ * アイテムリストをベース名の昇順、同名の場合は修飾子の数値昇順で並び替える。
+ * 例: "ミトン(x1)", "ミトン(x3)", "帽子(x2)" の順になる。
+ */
 export function sortByBaseAndModifier(items: ItemStats[]): ItemStats[] {
   return [...items].sort((a, b) => {
     const baseA = extractBaseName(a.itemName);
@@ -58,6 +82,17 @@ export interface EventItemExpected {
   base: number;
 }
 
+/**
+ * イベントアイテムの統計リストから、baseName ごとに 1周あたり枠数・期待値を集計する。
+ *
+ * 同一 baseName を持つ複数キー（例: "ミトン(x1)" と "ミトン(x3)"）を合算する。
+ * - `slots`: 1周あたりの平均枠数（baseName 全体）
+ * - `base`: 1周あたりの期待獲得数（枠数 × 個数の合計）
+ * - `totalSlots`: 全報告の合計ドロップ枠数
+ * - `totalRuns`: 合算に用いた最大周回数（キーごとのずれを MAX で吸収）
+ *
+ * @param eventItems `classifyStats()` で分類されたイベントアイテムの統計リスト
+ */
 export function calcEventItemExpected(eventItems: ItemStats[]): EventItemExpected[] {
   const grouped = new Map<
     string,

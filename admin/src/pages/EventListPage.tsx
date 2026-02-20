@@ -103,6 +103,7 @@ export function EventListPage() {
   );
 }
 
+/** ISO 形式の日時文字列を日本時間のロケール文字列に変換する。 */
 function formatDate(iso: string): string {
   const d = new Date(iso);
   return d.toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" });
