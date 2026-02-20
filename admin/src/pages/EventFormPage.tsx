@@ -382,6 +382,8 @@ function parseLevelKey(level: string): [number, number] {
 /**
  * クエストをレベル昇順で並び替える比較関数。Array.sort() に渡して使用する。
  * 数値が同じ場合はサフィックス（"+" < "++" < "★" など）の定義順で比較する。
+ * @param a 比較対象のクエスト
+ * @param b 比較対象のクエスト
  */
 function sortByLevel(a: Quest, b: Quest): number {
   const [aNum, aSuf] = parseLevelKey(a.level);

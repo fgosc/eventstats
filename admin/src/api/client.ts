@@ -48,7 +48,11 @@ export function createEvent(data: Omit<EventData, "eventId">) {
   });
 }
 
-/** 指定イベントを更新する。更新後のイベントデータを返す。 */
+/**
+ * 指定イベントを更新する。更新後のイベントデータを返す。
+ * @param eventId 更新対象のイベント ID
+ * @param data イベントデータ（eventId を除く）
+ */
 export function updateEvent(eventId: string, data: Omit<EventData, "eventId">) {
   return request<EventData>(`/events/${eventId}`, {
     method: "PUT",
@@ -71,6 +75,8 @@ export function getExclusions(questId: string) {
 /**
  * 指定クエストの除外リストを更新する（全件置き換え）。
  * 更新後の除外リストを返す。
+ * @param questId クエスト ID
+ * @param exclusions 除外リスト（全件置き換え）
  */
 export function updateExclusions(questId: string, exclusions: Exclusion[]) {
   return request<Exclusion[]>(`/exclusions/${questId}`, {
