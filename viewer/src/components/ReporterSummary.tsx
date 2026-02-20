@@ -1,6 +1,7 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
+import { useFetchData } from "../hooks/useFetchData";
 import { useFixedSortState } from "../hooks/useSortState";
 import { useToggleSet } from "../hooks/useToggleSet";
 import type { ReportDetail, SortKey } from "../reporterSummaryUtils";
@@ -96,27 +97,20 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
 }
 
 export function ReporterSummary({ eventId, quests, exclusions }: Props) {
-  const [questData, setQuestData] = useState<QuestData[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: questData,
+    loading,
+    error,
+  } = useFetchData(
+    (signal) =>
+      Promise.all(quests.map((q) => fetchQuestData(eventId, q.questId, signal))).then((results) =>
+        results.filter((d): d is QuestData => d !== null),
+      ),
+    [eventId, quests],
+    [] as QuestData[],
+  );
   const { sort, toggleSort } = useFixedSortState<SortKey>(DEFAULT_SORT);
   const { set: expanded, toggle: toggleExpanded } = useToggleSet();
-
-  useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    Promise.all(quests.map((q) => fetchQuestData(eventId, q.questId, controller.signal)))
-      .then((results) => setQuestData(results.filter((d): d is QuestData => d !== null)))
-      .catch((e: unknown) => {
-        if (e instanceof DOMException && e.name === "AbortError") return;
-        setError(e instanceof Error ? e.message : String(e));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, [eventId, quests]);
 
   const rawRows = useMemo(() => aggregateReporters(questData, exclusions), [questData, exclusions]);
   const rows = useMemo(() => sortRows(rawRows, sort), [rawRows, sort]);
