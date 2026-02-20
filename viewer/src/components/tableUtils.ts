@@ -1,5 +1,13 @@
 import type React from "react";
 
+/**
+ * ソート状態に応じてカラムヘッダに表示するインジケータ文字列を返す。
+ * - アクティブ昇順: " ▲"
+ * - アクティブ降順: " ▼"
+ * - 非アクティブ: " △"
+ * @param sort 現在のソート状態（null はソートなし）
+ * @param key このカラムのソートキー
+ */
 export function sortIndicator(
   sort: { key: string; dir: "asc" | "desc" } | null,
   key: string,

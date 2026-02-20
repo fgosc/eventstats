@@ -3,6 +3,12 @@ import type { Exclusion, ItemOutlierStats, ItemStats, Report } from "./types";
 
 const Z = 1.96; // 95% confidence
 
+/**
+ * Wilson スコア法による二項比率の 95% 信頼区間を計算する。
+ * @param successes ドロップ数（成功回数）
+ * @param n 試行回数（周回数）
+ * @returns 信頼区間の下限・上限（0〜1）
+ */
 function wilsonCI(successes: number, n: number): { lower: number; upper: number } {
   if (n === 0) return { lower: 0, upper: 0 };
   const p = successes / n;
@@ -16,10 +22,21 @@ function wilsonCI(successes: number, n: number): { lower: number; upper: number 
   };
 }
 
+/**
+ * 除外リストから reportId の Set を作成する。
+ * 集計・外れ値計算の前処理として有効報告のフィルタリングに使用する。
+ */
 export function createExcludedIdSet(exclusions: Exclusion[]): Set<string> {
   return new Set(exclusions.map((e) => e.reportId));
 }
 
+/**
+ * 有効な報告を集計し、アイテムごとのドロップ数・ドロップ率・Wilson 95% 信頼区間を計算する。
+ * exclusions に含まれる報告は集計から除外される。
+ * @param reports クエストの全報告リスト
+ * @param exclusions 除外対象の報告リスト
+ * @returns アイテムごとの集計結果（ItemStats）の配列
+ */
 export function aggregate(reports: Report[], exclusions: Exclusion[]): ItemStats[] {
   const excludedIds = createExcludedIdSet(exclusions);
   const validReports = reports.filter((r) => !excludedIds.has(r.id));
@@ -57,10 +74,21 @@ export function aggregate(reports: Report[], exclusions: Exclusion[]): ItemStats
   return stats;
 }
 
+/**
+ * アイテムが外れ値検出の常時対象かどうかを判定する。
+ * イベントアイテム・ポイント・QP は低ドロップ率でも外れ値チェックを行うため、true を返す。
+ */
 function isAlwaysTargetItem(itemName: string): boolean {
   return RE_EVENT_ITEM.test(itemName) || RE_POINT.test(itemName) || RE_QP.test(itemName);
 }
 
+/**
+ * アイテムごとに「1周あたりドロップ数」の平均・標準偏差を計算する。
+ * isOutlier() による外れ値判定の基準値として使用する。
+ * @param reports クエストの全報告リスト
+ * @param exclusions 除外対象の報告リスト
+ * @returns アイテムごとの外れ値統計（ItemOutlierStats）の配列
+ */
 export function calcOutlierStats(reports: Report[], exclusions: Exclusion[]): ItemOutlierStats[] {
   const excludedIds = createExcludedIdSet(exclusions);
   const validReports = reports.filter((r) => !excludedIds.has(r.id));
@@ -102,6 +130,22 @@ const MIN_SAMPLE_COUNT = 5;
 const MIN_RUNCOUNT = 20;
 const MIN_DROP_RATE_FOR_NORMAL = 0.2;
 
+/**
+ * 報告の値が外れ値かどうかを z スコアで判定する。
+ *
+ * 以下のいずれかに該当する場合は外れ値チェックをスキップして null を返す:
+ * - value が null（そのアイテムの報告が存在しない）
+ * - 周回数が少ない（MIN_RUNCOUNT 未満）
+ * - サンプル数が少ない（MIN_SAMPLE_COUNT 未満）
+ * - 標準偏差がほぼゼロ（全報告が同一値）
+ * - 通常アイテムかつドロップ率が低い（MIN_DROP_RATE_FOR_NORMAL 未満）
+ *
+ * @param value 報告のアイテムドロップ数
+ * @param runcount 報告の周回数
+ * @param outlierStats そのアイテムの全体統計（平均・標準偏差）
+ * @param dropRate そのアイテムの全体ドロップ率
+ * @returns 外れ値の場合は z スコア、外れ値でないまたはスキップの場合は null
+ */
 export function isOutlier(
   value: number | null,
   runcount: number,

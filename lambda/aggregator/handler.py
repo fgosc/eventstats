@@ -22,6 +22,7 @@ JST = timezone(timedelta(hours=9))
 
 
 def read_json(key: str) -> dict | list | None:
+    """S3 から指定キーの JSON を読み込む。キーが存在しない場合は None を返す。"""
     try:
         obj = s3.get_object(Bucket=BUCKET, Key=key)
         return json.loads(obj["Body"].read().decode("utf-8"))
@@ -32,6 +33,7 @@ def read_json(key: str) -> dict | list | None:
 
 
 def write_json(key: str, data: dict | list) -> None:
+    """data を JSON シリアライズして S3 の指定キーに書き込む。"""
     s3.put_object(
         Bucket=BUCKET,
         Key=key,
@@ -204,6 +206,15 @@ def process_quest(event_id: str, quest: dict, event_items: set[str]) -> None:
 
 
 def lambda_handler(event: Any, context: Any) -> dict[str, int]:
+    """集計 Lambda のエントリーポイント。
+
+    events.json を読み込み、現在時刻にアクティブなイベントのクエストを順に処理する。
+    イベント終了直前の報告や Harvest への反映遅延を考慮し、
+    終了後5時間はグレースピリオドとして集計を継続する。
+
+    Returns:
+        {"processed": <処理したクエスト数>}
+    """
     data = read_json(EVENTS_KEY)
     if data is None:
         logger.info("No events.json found, exiting")

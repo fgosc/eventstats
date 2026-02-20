@@ -365,6 +365,11 @@ export function EventFormPage() {
 
 const SUFFIX_ORDER = ["", "+", "++", "+++", "\u2605", "\u2605\u2605", "\u2605\u2605\u2605"];
 
+/**
+ * クエストレベル文字列を比較用の [数値部分, サフィックス順序] タプルに変換する。
+ * サフィックスは SUFFIX_ORDER の定義順（"", "+", "++", ... , "★★★"）で数値化する。
+ * パターンにマッチしない場合は [0, 0] を返す。
+ */
 function parseLevelKey(level: string): [number, number] {
   const m = level.match(/^(\d+)(.*)/);
   if (!m) return [0, 0];
@@ -374,6 +379,12 @@ function parseLevelKey(level: string): [number, number] {
   return [num, suffixIdx >= 0 ? suffixIdx : SUFFIX_ORDER.length];
 }
 
+/**
+ * クエストをレベル昇順で並び替える比較関数。Array.sort() に渡して使用する。
+ * 数値が同じ場合はサフィックス（"+" < "++" < "★" など）の定義順で比較する。
+ * @param a 比較対象のクエスト
+ * @param b 比較対象のクエスト
+ */
 function sortByLevel(a: Quest, b: Quest): number {
   const [aNum, aSuf] = parseLevelKey(a.level);
   const [bNum, bSuf] = parseLevelKey(b.level);
@@ -381,6 +392,10 @@ function sortByLevel(a: Quest, b: Quest): number {
   return aSuf - bSuf;
 }
 
+/**
+ * ISO 形式の日時文字列を `<input type="datetime-local">` の値形式（JST, "YYYY-MM-DDTHH:mm"）に変換する。
+ * API から取得した期間データをフォームに初期表示する際に使用する。
+ */
 function toLocalInput(iso: string): string {
   const d = new Date(iso);
   const offset = 9 * 60;
@@ -388,6 +403,11 @@ function toLocalInput(iso: string): string {
   return local.toISOString().slice(0, 16);
 }
 
+/**
+ * `<input type="datetime-local">` の値（"YYYY-MM-DDTHH:mm"）を
+ * JST オフセット付きの ISO 形式（"YYYY-MM-DDTHH:mm:00+09:00"）に変換する。
+ * フォームの入力値を API へ送信するペイロードに変換する際に使用する。
+ */
 function toISO(localInput: string): string {
   return `${localInput}:00+09:00`;
 }
