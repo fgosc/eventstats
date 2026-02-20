@@ -1,6 +1,13 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 
+/**
+ * AbortController・loading/error 状態管理を共通化する汎用フェッチフック。
+ * @param fetcher AbortSignal を受け取り Promise を返す非同期関数
+ * @param deps fetcher の再実行トリガーとなる依存配列（呼び出し側が管理する）
+ * @param initialData フェッチ完了前に返す初期値
+ * @returns data・loading・error の状態オブジェクト
+ */
 export function useFetchData<T>(
   fetcher: (signal: AbortSignal) => Promise<T>,
   deps: React.DependencyList,
