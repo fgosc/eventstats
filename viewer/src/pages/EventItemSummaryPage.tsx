@@ -16,9 +16,9 @@ export function EventItemSummaryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const event = events.find((e) => e.eventId === eventId);
-
   useEffect(() => {
+    if (!eventId) return;
+    const event = events.find((e) => e.eventId === eventId);
     if (!event) return;
 
     const controller = new AbortController();
@@ -57,9 +57,10 @@ export function EventItemSummaryPage() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [event, exclusions]);
+  }, [eventId, events, exclusions]);
 
   if (!eventId) return null;
+  const event = events.find((e) => e.eventId === eventId);
   if (!event) return <Navigate to="/" replace />;
   if (loading || error) return <LoadingError loading={loading} error={error} />;
 
