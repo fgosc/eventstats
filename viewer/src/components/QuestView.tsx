@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { aggregate, calcOutlierStats, createExcludedIdSet } from "../aggregate";
 import { fetchQuestData } from "../api";
 import { formatTimestamp } from "../formatters";
-import type { Exclusion, QuestData } from "../types";
+import { useFetchData } from "../hooks/useFetchData";
+import type { Exclusion } from "../types";
 import { LoadingError } from "./LoadingError";
 import { ReportTable } from "./ReportTable";
 import { StatsBar } from "./StatsBar";
@@ -15,25 +16,11 @@ interface Props {
 }
 
 export function QuestView({ eventId, questId, exclusions }: Props) {
-  const [data, setData] = useState<QuestData | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    setError(null);
-    fetchQuestData(eventId, questId, controller.signal)
-      .then(setData)
-      .catch((e: unknown) => {
-        if (e instanceof DOMException && e.name === "AbortError") return;
-        setError(e instanceof Error ? e.message : String(e));
-      })
-      .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
-      });
-    return () => controller.abort();
-  }, [eventId, questId]);
+  const { data, loading, error } = useFetchData(
+    (signal) => fetchQuestData(eventId, questId, signal),
+    [eventId, questId],
+    null,
+  );
 
   const stats = useMemo(
     () => (data ? aggregate(data.reports, exclusions) : []),
