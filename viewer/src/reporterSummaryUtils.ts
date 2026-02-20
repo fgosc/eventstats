@@ -1,3 +1,4 @@
+import { getReporterName } from "./reportTableUtils";
 import type { ExclusionsMap, QuestData, SortDir } from "./types";
 
 export interface ReportDetail {
@@ -33,7 +34,7 @@ export function aggregateReporters(
     for (const r of qd.reports) {
       if (excludedIds.has(r.id)) continue;
 
-      const name = r.reporterName || r.reporter || "匿名";
+      const name = getReporterName(r);
       const entry = map.get(name) ?? {
         reporter: name,
         xId: r.reporter || "",
