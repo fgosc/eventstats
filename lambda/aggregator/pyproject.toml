@@ -1,0 +1,11 @@
+[project]
+name = "aggregator"
+version = "0.1.0"
+description = "FGO周回カウンタの報告データを集計する Lambda 関数"
+requires-python = ">=3.12"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
