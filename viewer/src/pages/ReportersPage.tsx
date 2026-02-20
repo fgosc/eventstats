@@ -6,7 +6,7 @@ export function ReportersPage() {
   const { eventId } = useParams<{ eventId: string }>();
   const { events, exclusions } = useOutletContext<LayoutContext>();
 
-  if (!eventId) return null;
+  if (!eventId) return <Navigate to="/" replace />;
 
   const event = events.find((e) => e.eventId === eventId);
   if (!event) return <Navigate to="/" replace />;

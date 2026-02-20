@@ -3,7 +3,7 @@ import { createExcludedIdSet, isOutlier } from "../aggregate";
 import { formatItemHeader, formatNote, formatTimestamp } from "../formatters";
 import { useSortState } from "../hooks/useSortState";
 import type { SortKey } from "../reportTableUtils";
-import { sortReports } from "../reportTableUtils";
+import { getReporterName, sortReports } from "../reportTableUtils";
 import type { Exclusion, ItemOutlierStats, ItemStats, Report } from "../types";
 import {
   sortIndicator,
@@ -80,13 +80,13 @@ export function ReportTable({ reports, exclusions, itemNames, outlierStats, stat
             return (
               <tr key={r.id} style={rowStyle} title={excluded ? exclusionMap.get(r.id) : undefined}>
                 <td style={tdStyle}>{excluded ? "除外" : "有効"}</td>
-                <td style={tdStyleReporter} title={r.reporterName || r.reporter || "匿名"}>
+                <td style={tdStyleReporter} title={getReporterName(r)}>
                   <a
                     href={`https://fgodrop.max747.org/reports/${r.id}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    {r.reporterName || r.reporter || "匿名"}
+                    {getReporterName(r)}
                   </a>
                 </td>
                 <td style={tdStyleRight}>{r.runcount}</td>
