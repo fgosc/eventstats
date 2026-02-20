@@ -59,7 +59,7 @@ export function EventItemSummaryPage() {
     return () => controller.abort();
   }, [eventId, events, exclusions]);
 
-  if (!eventId) return null;
+  if (!eventId) return <Navigate to="/" replace />;
   const event = events.find((e) => e.eventId === eventId);
   if (!event) return <Navigate to="/" replace />;
   if (loading || error) return <LoadingError loading={loading} error={error} />;
