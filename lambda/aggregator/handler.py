@@ -104,6 +104,12 @@ def transform_report(
             warnings.append(
                 "excluded_items:" + ",".join(excluded_names) + "(実数報告のため除外)"
             )
+    else:
+        bare_event_items = sorted(k for k in items if k in event_items)
+        if bare_event_items:
+            warnings.append(
+                "excluded_items:" + ",".join(bare_event_items) + "(添字なしイベントアイテムのため除外)"
+            )
 
     for key, value_str in items.items():
         # NaN → null に変換
@@ -130,8 +136,8 @@ def transform_report(
             result[key] = value
             continue
 
-        # 実数報告のイベントアイテム: この報告から除外
-        if raw_count and key in event_items:
+        # イベントアイテムのベース名（添字なし）: 実数報告かどうかに関わらず除外
+        if key in event_items:
             continue
 
         # 通常アイテム
