@@ -54,10 +54,21 @@ describe("classifyStats", () => {
       makeStats("QP(+150000)"),
     ];
     const { normal, eventItems, points, qp } = classifyStats(stats);
+    // 鉄杭・骨は item_list_priority.json に掲載されているため normal に含まれる
     expect(normal).toHaveLength(2);
     expect(eventItems).toHaveLength(2);
     expect(points).toHaveLength(1);
     expect(qp).toHaveLength(1);
+  });
+
+  test("item_list_priority.json に掲載されていない通常アイテムは除外される", () => {
+    const stats = [makeStats("未知のアイテム"), makeStats("鉄杭"), makeStats("ぐん肥(x3)")];
+    const { normal, eventItems } = classifyStats(stats);
+    // 未知のアイテムは normal に含まれない
+    expect(normal).toHaveLength(1);
+    expect(normal[0].itemName).toBe("鉄杭");
+    // イベントアイテムはリストに関係なく分類される
+    expect(eventItems).toHaveLength(1);
   });
 });
 

@@ -1,4 +1,5 @@
 import { RE_EVENT_ITEM, RE_POINT, RE_QP } from "./constants";
+import { isKnownItem } from "./itemPriority";
 import type { ItemStats } from "./types";
 
 /**
@@ -20,9 +21,10 @@ export function classifyStats(stats: ItemStats[]) {
       qp.push(s);
     } else if (RE_POINT.test(s.itemName)) {
       points.push(s);
-    } else {
+    } else if (isKnownItem(s.itemName)) {
       normal.push(s);
     }
+    // 未知アイテムは全カテゴリから除外
   }
 
   return { normal, eventItems, points, qp };
