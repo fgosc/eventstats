@@ -103,14 +103,14 @@ def transform_report(
     if raw_count:
         excluded_names = sorted(k for k in items if k in event_items)
         if excluded_names:
-            warnings.append(
-                "excluded_items:" + ",".join(excluded_names) + "(実数報告のため除外)"
-            )
+            warnings.append("excluded_items:" + ",".join(excluded_names) + "(実数報告のため除外)")
     else:
         bare_event_items = sorted(k for k in items if k in event_items)
         if bare_event_items:
             warnings.append(
-                "excluded_items:" + ",".join(bare_event_items) + "(添字なしイベントアイテムのため除外)"
+                "excluded_items:"
+                + ",".join(bare_event_items)
+                + "(添字なしイベントアイテムのため除外)"
             )
 
     for key, value_str in items.items():

@@ -4,8 +4,6 @@ import os
 import sys
 from unittest.mock import MagicMock
 
-import pytest
-
 # boto3 はテスト環境に存在しないため、インポート前にモック化する
 os.environ.setdefault("S3_BUCKET_NAME", "test-bucket")
 sys.modules["boto3"] = MagicMock()
@@ -71,7 +69,15 @@ def test_is_raw_count_report_false_no_event_item():
 
 
 def _make_report(items: dict[str, str]) -> dict:
-    return {"items": items, "id": "r1", "reporter": "u1", "reporter_name": "user1", "runcount": 10, "timestamp": "", "note": ""}
+    return {
+        "items": items,
+        "id": "r1",
+        "reporter": "u1",
+        "reporter_name": "user1",
+        "runcount": 10,
+        "timestamp": "",
+        "note": "",
+    }
 
 
 class TestTransformReportNormal:
