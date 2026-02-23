@@ -1,4 +1,5 @@
 import { MAX_EVENT_BONUS } from "../constants";
+import { compareByDropPriority } from "../itemPriority";
 import {
   calcEventItemExpected,
   classifyStats,
@@ -107,7 +108,8 @@ function BonusTable({ title, items }: { title: string; items: ItemStats[] }) {
 export function SummaryTable({ stats }: Props) {
   if (stats.length === 0) return <p>データなし</p>;
 
-  const { normal, eventItems, points, qp } = classifyStats(stats);
+  const { normal: rawNormal, eventItems, points, qp } = classifyStats(stats);
+  const normal = [...rawNormal].sort((a, b) => compareByDropPriority(a.itemName, b.itemName));
 
   return (
     <>

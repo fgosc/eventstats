@@ -4,6 +4,7 @@ import { formatTimestamp } from "../formatters";
 import { useFetchData } from "../hooks/useFetchData";
 import { useFixedSortState } from "../hooks/useSortState";
 import { useToggleSet } from "../hooks/useToggleSet";
+import { sortItemNames } from "../itemPriority";
 import type { ReportDetail, SortKey } from "../reporterSummaryUtils";
 import { aggregateReporters, DEFAULT_SORT, sortRows } from "../reporterSummaryUtils";
 import type { ExclusionsMap, Quest, QuestData } from "../types";
@@ -51,7 +52,7 @@ function DetailTable({ details }: { details: ReportDetail[] }) {
       itemNames.add(key);
     }
   }
-  const itemCols = [...itemNames];
+  const itemCols = sortItemNames([...itemNames]);
 
   return (
     <table style={{ ...tableStyle, marginBottom: "0.5rem", fontSize: "0.85rem" }}>
