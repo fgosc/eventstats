@@ -171,9 +171,10 @@ def process_quest(event_id: str, quest: dict, event_items: set[str]) -> None:
         logger.info("Fetched %d reports from source %s", len(fetched), sid)
         for r in fetched:
             rid = r.get("id", r.get("report_id", ""))
-            if rid and rid in seen_ids:
-                continue
-            seen_ids.add(rid)
+            if rid:
+                if rid in seen_ids:
+                    continue
+                seen_ids.add(rid)
             all_reports.append(r)
 
     reports = all_reports
