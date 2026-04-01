@@ -3,6 +3,7 @@ export interface Quest {
   name: string;
   level: string;
   ap: number;
+  sourceQuestIds?: string[];
 }
 
 export interface EventPeriod {
