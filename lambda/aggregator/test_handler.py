@@ -10,7 +10,9 @@ sys.modules["boto3"] = MagicMock()
 sys.modules["botocore"] = MagicMock()
 sys.modules["botocore.exceptions"] = MagicMock()
 
-from handler import detect_event_items, is_raw_count_report, transform_report  # noqa: E402
+from unittest.mock import patch
+
+from handler import detect_event_items, is_raw_count_report, process_quest, transform_report  # noqa: E402
 
 
 # --- detect_event_items ---
@@ -155,3 +157,103 @@ class TestTransformReportNaN:
         report = _make_report({"素材A": "NaN"})
         result, _ = transform_report(report, set())
         assert result["素材A"] is None
+
+
+# --- process_quest (sourceQuestIds) ---
+
+
+def _make_harvest_report(rid: str, items: dict[str, str]) -> dict:
+    return {
+        "id": rid,
+        "reporter": "u1",
+        "reporter_name": "user1",
+        "runcount": 10,
+        "timestamp": "2026-01-01T00:00:00+09:00",
+        "note": "",
+        "items": items,
+    }
+
+
+class TestProcessQuestSourceQuestIds:
+    """process_quest の sourceQuestIds 対応"""
+
+    def _run(self, quest: dict, fetch_side_effect: list[list]) -> dict:
+        """process_quest を実行し、write_json に渡された引数を返す。"""
+        with (
+            patch("handler.fetch_harvest_reports", side_effect=fetch_side_effect),
+            patch("handler.write_json") as mock_write,
+        ):
+            process_quest("ev1", quest, set())
+            _key, output = mock_write.call_args[0]
+        return output
+
+    def test_single_source_backward_compat(self):
+        """sourceQuestIds 未設定 → questId のみ取得"""
+        quest = {"questId": "AAA", "name": "Q1", "level": "90+", "ap": 40}
+        reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
+        output = self._run(quest, [reports_a])
+        assert len(output["reports"]) == 1
+        assert output["reports"][0]["id"] == "r1"
+
+    def test_multiple_sources_merged(self):
+        """sourceQuestIds 設定 → 全ソースのレポートがマージされる"""
+        quest = {
+            "questId": "AAA",
+            "name": "Q1",
+            "level": "90+",
+            "ap": 40,
+            "sourceQuestIds": ["AAA", "BBB"],
+        }
+        reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
+        reports_b = [_make_harvest_report("r2", {"素材A": "3"})]
+        output = self._run(quest, [reports_a, reports_b])
+        assert len(output["reports"]) == 2
+        ids = {r["id"] for r in output["reports"]}
+        assert ids == {"r1", "r2"}
+
+    def test_duplicate_report_ids_deduplicated(self):
+        """同一レポート ID が複数ソースに存在する場合は重複排除される"""
+        quest = {
+            "questId": "AAA",
+            "name": "Q1",
+            "level": "90+",
+            "ap": 40,
+            "sourceQuestIds": ["AAA", "BBB"],
+        }
+        reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
+        reports_b = [_make_harvest_report("r1", {"素材A": "5"})]  # 同じ ID
+        output = self._run(quest, [reports_a, reports_b])
+        assert len(output["reports"]) == 1
+        assert output["reports"][0]["id"] == "r1"
+
+    def test_empty_source_quest_ids_fallback(self):
+        """sourceQuestIds が空リストの場合 questId にフォールバック"""
+        quest = {
+            "questId": "AAA",
+            "name": "Q1",
+            "level": "90+",
+            "ap": 40,
+            "sourceQuestIds": [],
+        }
+        reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
+        output = self._run(quest, [reports_a])
+        assert len(output["reports"]) == 1
+
+    def test_output_key_uses_quest_id(self):
+        """出力 S3 キーは常に questId を使う"""
+        quest = {
+            "questId": "AAA",
+            "name": "Q1",
+            "level": "90+",
+            "ap": 40,
+            "sourceQuestIds": ["AAA", "BBB"],
+        }
+        reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
+        reports_b = [_make_harvest_report("r2", {"素材A": "3"})]
+        with (
+            patch("handler.fetch_harvest_reports", side_effect=[reports_a, reports_b]),
+            patch("handler.write_json") as mock_write,
+        ):
+            process_quest("ev1", quest, set())
+            key, _output = mock_write.call_args[0]
+        assert key == "ev1/AAA.json"

@@ -16,6 +16,10 @@ export function EventFormPage() {
   const [newItem, setNewItem] = useState("");
   const [loading, setLoading] = useState(isEdit);
   const [error, setError] = useState("");
+  const [sourceExpanded, setSourceExpanded] = useState<Record<number, boolean>>({});
+  const [newSourceId, setNewSourceId] = useState<Record<number, string>>({});
+  // 候補テーブルの「ソースに追加」select の選択状態: candidateId → questIndex (-1 = 未選択)
+  const [addAsSourceTarget, setAddAsSourceTarget] = useState<Record<string, number>>({});
 
   // Harvest クエスト候補
   const [candidates, setCandidates] = useState<HarvestQuest[]>([]);
@@ -80,11 +84,75 @@ export function EventFormPage() {
   };
 
   const addQuest = () => {
-    setQuests([...quests, { questId: "", name: "", level: "", ap: 40 }]);
+    setQuests([...quests, { questId: "", name: "", level: "", ap: 40, sourceQuestIds: [] }]);
+  };
+
+  const toggleSourceExpanded = (index: number) => {
+    setSourceExpanded((prev) => ({ ...prev, [index]: !prev[index] }));
+  };
+
+  const addSourceId = (index: number) => {
+    const id = (newSourceId[index] ?? "").trim();
+    if (!id) return;
+    const current = quests[index].sourceQuestIds ?? [];
+    if (current.includes(id)) return;
+    const updated = quests.map((q, i) =>
+      i === index ? { ...q, sourceQuestIds: [...current, id] } : q,
+    );
+    setQuests(updated);
+    setNewSourceId((prev) => ({ ...prev, [index]: "" }));
+  };
+
+  const removeSourceId = (questIndex: number, sourceIndex: number) => {
+    const current = quests[questIndex].sourceQuestIds ?? [];
+    const updated = quests.map((q, i) =>
+      i === questIndex
+        ? { ...q, sourceQuestIds: current.filter((_, si) => si !== sourceIndex) }
+        : q,
+    );
+    setQuests(updated);
+  };
+
+  const addAsSource = (questIndex: number, sourceId: string) => {
+    if (questIndex < 0 || questIndex >= quests.length) return;
+    const current = quests[questIndex].sourceQuestIds ?? [];
+    if (current.includes(sourceId)) return;
+    const updated = quests.map((q, i) =>
+      i === questIndex ? { ...q, sourceQuestIds: [...current, sourceId] } : q,
+    );
+    setQuests(updated);
+    setAddAsSourceTarget((prev) => ({ ...prev, [sourceId]: -1 }));
   };
 
   const removeQuest = (index: number) => {
     setQuests(quests.filter((_, i) => i !== index));
+    setSourceExpanded((prev) => {
+      const next: Record<number, boolean> = {};
+      for (const [k, v] of Object.entries(prev)) {
+        const ki = Number(k);
+        if (ki < index) next[ki] = v;
+        else if (ki > index) next[ki - 1] = v;
+      }
+      return next;
+    });
+    setNewSourceId((prev) => {
+      const next: Record<number, string> = {};
+      for (const [k, v] of Object.entries(prev)) {
+        const ki = Number(k);
+        if (ki < index) next[ki] = v;
+        else if (ki > index) next[ki - 1] = v;
+      }
+      return next;
+    });
+    setAddAsSourceTarget((prev) => {
+      const next: Record<string, number> = {};
+      for (const [k, v] of Object.entries(prev)) {
+        if (v < index) next[k] = v;
+        else if (v > index) next[k] = v - 1;
+        // v === index: 削除されたクエストを指していたので除外（未選択に戻す）
+      }
+      return next;
+    });
   };
 
   const updateQuest = (index: number, field: keyof Quest, value: string | number) => {
@@ -124,7 +192,7 @@ export function EventFormPage() {
 
   if (loading) return <p>読み込み中...</p>;
 
-  const addedIds = new Set(quests.map((q) => q.questId));
+  const addedIds = new Set(quests.flatMap((q) => [q.questId, ...(q.sourceQuestIds ?? [])]));
 
   return (
     <div style={{ maxWidth: 800, margin: "24px auto", padding: 24 }}>
@@ -276,9 +344,48 @@ export function EventFormPage() {
                       {addedIds.has(c.id) ? (
                         <span style={{ color: "#888" }}>追加済み</span>
                       ) : (
-                        <button type="button" onClick={() => addCandidate(c)}>
-                          追加
-                        </button>
+                        <div
+                          style={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 4,
+                            alignItems: "center",
+                          }}
+                        >
+                          <button type="button" onClick={() => addCandidate(c)}>
+                            追加
+                          </button>
+                          {quests.length > 0 && (
+                            <>
+                              <select
+                                value={addAsSourceTarget[c.id] ?? -1}
+                                onChange={(e) =>
+                                  setAddAsSourceTarget((prev) => ({
+                                    ...prev,
+                                    [c.id]: Number(e.target.value),
+                                  }))
+                                }
+                                style={{ fontSize: 13 }}
+                              >
+                                <option value={-1}>ソースに追加...</option>
+                                {quests.map((q, qi) => (
+                                  <option key={qi} value={qi}>
+                                    {q.name || `クエスト${qi + 1}`}
+                                    {q.level ? ` (Lv.${q.level})` : ""}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                disabled={(addAsSourceTarget[c.id] ?? -1) < 0}
+                                onClick={() => addAsSource(addAsSourceTarget[c.id], c.id)}
+                                style={{ fontSize: 13 }}
+                              >
+                                +
+                              </button>
+                            </>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -344,6 +451,84 @@ export function EventFormPage() {
               <button type="button" onClick={() => removeQuest(i)}>
                 削除
               </button>
+            </div>
+
+            {/* 複数ソース設定 */}
+            <div style={{ marginTop: 8 }}>
+              <button
+                type="button"
+                onClick={() => toggleSourceExpanded(i)}
+                style={{
+                  fontSize: 12,
+                  color: "#555",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
+              >
+                {sourceExpanded[i] ? "▲ 複数ソース設定を閉じる" : "▼ 複数ソース設定"}
+                {q.sourceQuestIds && q.sourceQuestIds.length > 0 && (
+                  <span style={{ marginLeft: 6, color: "#0066cc" }}>
+                    ({q.sourceQuestIds.length} 件設定中)
+                  </span>
+                )}
+              </button>
+              {sourceExpanded[i] && (
+                <div
+                  style={{
+                    marginTop: 6,
+                    padding: "8px 12px",
+                    background: "#f9f9f9",
+                    borderRadius: 4,
+                    border: "1px solid #e0e0e0",
+                  }}
+                >
+                  <p style={{ fontSize: 12, color: "#666", margin: "0 0 6px" }}>
+                    集計元の Harvest ページ ID を列挙します。未設定の場合はクエスト ID
+                    のみが使われます。
+                  </p>
+                  {(q.sourceQuestIds ?? []).map((sid, si) => (
+                    <div
+                      key={si}
+                      style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}
+                    >
+                      <span style={{ fontFamily: "monospace", fontSize: 13, flex: 1 }}>{sid}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeSourceId(i, si)}
+                        style={{
+                          border: "none",
+                          background: "none",
+                          cursor: "pointer",
+                          color: "#888",
+                          fontSize: 13,
+                        }}
+                      >
+                        x
+                      </button>
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
+                    <input
+                      type="text"
+                      value={newSourceId[i] ?? ""}
+                      onChange={(e) => setNewSourceId((prev) => ({ ...prev, [i]: e.target.value }))}
+                      placeholder="Harvest ページ ID"
+                      style={{ flex: 1, fontFamily: "monospace", fontSize: 13 }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          addSourceId(i);
+                        }
+                      }}
+                    />
+                    <button type="button" onClick={() => addSourceId(i)} style={{ fontSize: 13 }}>
+                      追加
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
