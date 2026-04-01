@@ -114,6 +114,7 @@ export function EventFormPage() {
   };
 
   const addAsSource = (questIndex: number, sourceId: string) => {
+    if (questIndex < 0 || questIndex >= quests.length) return;
     const current = quests[questIndex].sourceQuestIds ?? [];
     if (current.includes(sourceId)) return;
     const updated = quests.map((q, i) =>
@@ -125,6 +126,33 @@ export function EventFormPage() {
 
   const removeQuest = (index: number) => {
     setQuests(quests.filter((_, i) => i !== index));
+    setSourceExpanded((prev) => {
+      const next: Record<number, boolean> = {};
+      for (const [k, v] of Object.entries(prev)) {
+        const ki = Number(k);
+        if (ki < index) next[ki] = v;
+        else if (ki > index) next[ki - 1] = v;
+      }
+      return next;
+    });
+    setNewSourceId((prev) => {
+      const next: Record<number, string> = {};
+      for (const [k, v] of Object.entries(prev)) {
+        const ki = Number(k);
+        if (ki < index) next[ki] = v;
+        else if (ki > index) next[ki - 1] = v;
+      }
+      return next;
+    });
+    setAddAsSourceTarget((prev) => {
+      const next: Record<string, number> = {};
+      for (const [k, v] of Object.entries(prev)) {
+        if (v < index) next[k] = v;
+        else if (v > index) next[k] = v - 1;
+        // v === index: 削除されたクエストを指していたので除外（未選択に戻す）
+      }
+      return next;
+    });
   };
 
   const updateQuest = (index: number, field: keyof Quest, value: string | number) => {
