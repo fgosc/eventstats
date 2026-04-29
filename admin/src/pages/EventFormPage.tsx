@@ -97,6 +97,7 @@ export function EventFormPage() {
   const addSourceId = (index: number) => {
     const id = (newSourceId[index] ?? "").trim();
     if (!id) return;
+    if (id === quests[index].questId) return;
     const current = quests[index].additionalSourceQuestIds ?? [];
     if (current.includes(id)) return;
     const updated = quests.map((q, i) =>
@@ -118,6 +119,7 @@ export function EventFormPage() {
 
   const addAsSource = (questIndex: number, sourceId: string) => {
     if (questIndex < 0 || questIndex >= quests.length) return;
+    if (sourceId === quests[questIndex].questId) return;
     const current = quests[questIndex].additionalSourceQuestIds ?? [];
     if (current.includes(sourceId)) return;
     const updated = quests.map((q, i) =>
