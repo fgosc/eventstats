@@ -159,7 +159,7 @@ class TestTransformReportNaN:
         assert result["素材A"] is None
 
 
-# --- process_quest (sourceQuestIds) ---
+# --- process_quest (additionalSourceQuestIds) ---
 
 
 def _make_harvest_report(rid: str, items: dict[str, str]) -> dict:
@@ -174,8 +174,8 @@ def _make_harvest_report(rid: str, items: dict[str, str]) -> dict:
     }
 
 
-class TestProcessQuestSourceQuestIds:
-    """process_quest の sourceQuestIds 対応"""
+class TestProcessQuestAdditionalSourceQuestIds:
+    """process_quest の additionalSourceQuestIds 対応"""
 
     def _run(self, quest: dict, fetch_side_effect: list[list]) -> dict:
         """process_quest を実行し、write_json に渡された引数を返す。"""
@@ -187,22 +187,22 @@ class TestProcessQuestSourceQuestIds:
             _key, output = mock_write.call_args[0]
         return output
 
-    def test_single_source_backward_compat(self):
-        """sourceQuestIds 未設定 → questId のみ取得"""
+    def test_single_source_no_additional(self):
+        """additionalSourceQuestIds 未設定 → questId のみ取得"""
         quest = {"questId": "AAA", "name": "Q1", "level": "90+", "ap": 40}
         reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
         output = self._run(quest, [reports_a])
         assert len(output["reports"]) == 1
         assert output["reports"][0]["id"] == "r1"
 
-    def test_multiple_sources_merged(self):
-        """sourceQuestIds 設定 → 全ソースのレポートがマージされる"""
+    def test_additional_sources_merged(self):
+        """additionalSourceQuestIds 設定 → questId + 追加ソースのレポートがマージされる"""
         quest = {
             "questId": "AAA",
             "name": "Q1",
             "level": "90+",
             "ap": 40,
-            "sourceQuestIds": ["AAA", "BBB"],
+            "additionalSourceQuestIds": ["BBB"],
         }
         reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
         reports_b = [_make_harvest_report("r2", {"素材A": "3"})]
@@ -218,7 +218,7 @@ class TestProcessQuestSourceQuestIds:
             "name": "Q1",
             "level": "90+",
             "ap": 40,
-            "sourceQuestIds": ["AAA", "BBB"],
+            "additionalSourceQuestIds": ["BBB"],
         }
         reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
         reports_b = [_make_harvest_report("r1", {"素材A": "5"})]  # 同じ ID
@@ -226,14 +226,14 @@ class TestProcessQuestSourceQuestIds:
         assert len(output["reports"]) == 1
         assert output["reports"][0]["id"] == "r1"
 
-    def test_empty_source_quest_ids_fallback(self):
-        """sourceQuestIds が空リストの場合 questId にフォールバック"""
+    def test_empty_additional_source_quest_ids(self):
+        """additionalSourceQuestIds が空リストの場合 questId のみ取得"""
         quest = {
             "questId": "AAA",
             "name": "Q1",
             "level": "90+",
             "ap": 40,
-            "sourceQuestIds": [],
+            "additionalSourceQuestIds": [],
         }
         reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
         output = self._run(quest, [reports_a])
@@ -246,7 +246,7 @@ class TestProcessQuestSourceQuestIds:
             "name": "Q1",
             "level": "90+",
             "ap": 40,
-            "sourceQuestIds": ["AAA", "BBB"],
+            "additionalSourceQuestIds": ["BBB"],
         }
         reports_a = [_make_harvest_report("r1", {"素材A": "5"})]
         reports_b = [_make_harvest_report("r2", {"素材A": "3"})]

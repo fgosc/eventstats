@@ -161,7 +161,7 @@ def fetch_harvest_reports(quest_id: str) -> list[dict]:
 def process_quest(event_id: str, quest: dict, event_items: set[str]) -> None:
     """クエスト1件を処理: 取得・変換・中間 JSON 出力。"""
     quest_id = quest["questId"]
-    source_ids = quest.get("sourceQuestIds") or [quest_id]
+    source_ids = [quest_id] + list(quest.get("additionalSourceQuestIds") or [])
     logger.info("Processing quest %s (%s), sources: %s", quest_id, quest["name"], source_ids)
 
     all_reports: list[dict] = []
