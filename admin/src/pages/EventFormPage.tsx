@@ -84,7 +84,10 @@ export function EventFormPage() {
   };
 
   const addQuest = () => {
-    setQuests([...quests, { questId: "", name: "", level: "", ap: 40, sourceQuestIds: [] }]);
+    setQuests([
+      ...quests,
+      { questId: "", name: "", level: "", ap: 40, additionalSourceQuestIds: [] },
+    ]);
   };
 
   const toggleSourceExpanded = (index: number) => {
@@ -94,20 +97,21 @@ export function EventFormPage() {
   const addSourceId = (index: number) => {
     const id = (newSourceId[index] ?? "").trim();
     if (!id) return;
-    const current = quests[index].sourceQuestIds ?? [];
+    if (id === quests[index].questId) return;
+    const current = quests[index].additionalSourceQuestIds ?? [];
     if (current.includes(id)) return;
     const updated = quests.map((q, i) =>
-      i === index ? { ...q, sourceQuestIds: [...current, id] } : q,
+      i === index ? { ...q, additionalSourceQuestIds: [...current, id] } : q,
     );
     setQuests(updated);
     setNewSourceId((prev) => ({ ...prev, [index]: "" }));
   };
 
   const removeSourceId = (questIndex: number, sourceIndex: number) => {
-    const current = quests[questIndex].sourceQuestIds ?? [];
+    const current = quests[questIndex].additionalSourceQuestIds ?? [];
     const updated = quests.map((q, i) =>
       i === questIndex
-        ? { ...q, sourceQuestIds: current.filter((_, si) => si !== sourceIndex) }
+        ? { ...q, additionalSourceQuestIds: current.filter((_, si) => si !== sourceIndex) }
         : q,
     );
     setQuests(updated);
@@ -115,10 +119,11 @@ export function EventFormPage() {
 
   const addAsSource = (questIndex: number, sourceId: string) => {
     if (questIndex < 0 || questIndex >= quests.length) return;
-    const current = quests[questIndex].sourceQuestIds ?? [];
+    if (sourceId === quests[questIndex].questId) return;
+    const current = quests[questIndex].additionalSourceQuestIds ?? [];
     if (current.includes(sourceId)) return;
     const updated = quests.map((q, i) =>
-      i === questIndex ? { ...q, sourceQuestIds: [...current, sourceId] } : q,
+      i === questIndex ? { ...q, additionalSourceQuestIds: [...current, sourceId] } : q,
     );
     setQuests(updated);
     setAddAsSourceTarget((prev) => ({ ...prev, [sourceId]: -1 }));
@@ -192,7 +197,9 @@ export function EventFormPage() {
 
   if (loading) return <p>読み込み中...</p>;
 
-  const addedIds = new Set(quests.flatMap((q) => [q.questId, ...(q.sourceQuestIds ?? [])]));
+  const addedIds = new Set(
+    quests.flatMap((q) => [q.questId, ...(q.additionalSourceQuestIds ?? [])]),
+  );
 
   return (
     <div style={{ maxWidth: 800, margin: "24px auto", padding: 24 }}>
@@ -468,9 +475,9 @@ export function EventFormPage() {
                 }}
               >
                 {sourceExpanded[i] ? "▲ 複数ソース設定を閉じる" : "▼ 複数ソース設定"}
-                {q.sourceQuestIds && q.sourceQuestIds.length > 0 && (
+                {q.additionalSourceQuestIds && q.additionalSourceQuestIds.length > 0 && (
                   <span style={{ marginLeft: 6, color: "#0066cc" }}>
-                    ({q.sourceQuestIds.length} 件設定中)
+                    ({q.additionalSourceQuestIds.length} 件設定中)
                   </span>
                 )}
               </button>
@@ -488,7 +495,7 @@ export function EventFormPage() {
                     集計元の Harvest ページ ID を列挙します。未設定の場合はクエスト ID
                     のみが使われます。
                   </p>
-                  {(q.sourceQuestIds ?? []).map((sid, si) => (
+                  {(q.additionalSourceQuestIds ?? []).map((sid, si) => (
                     <div
                       key={si}
                       style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}
