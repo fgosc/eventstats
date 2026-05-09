@@ -6,6 +6,7 @@ function makeReport(id: string, runcount: number, items: Record<string, number |
   return {
     id,
     reporter: "user1",
+    reporterId: "",
     reporterName: "User 1",
     runcount,
     timestamp: "2026-01-01T00:00:00Z",

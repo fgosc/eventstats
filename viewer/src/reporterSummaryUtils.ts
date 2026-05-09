@@ -11,6 +11,7 @@ export interface ReportDetail {
 
 export interface ReporterRow {
   reporter: string;
+  reporterId: string;
   xId: string;
   reportCount: number;
   totalRuns: number;
@@ -46,6 +47,7 @@ export function aggregateReporters(
       const name = getReporterName(r);
       const entry = map.get(name) ?? {
         reporter: name,
+        reporterId: r.reporterId || "",
         xId: r.reporter || "",
         reportCount: 0,
         totalRuns: 0,

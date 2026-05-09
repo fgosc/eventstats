@@ -11,6 +11,7 @@ function makeQuestData(
     reporter: string;
     reporterName: string;
     runcount: number;
+    reporterId?: string;
   }>,
 ): QuestData {
   return {
@@ -18,6 +19,7 @@ function makeQuestData(
     lastUpdated: "2026-01-01T00:00:00Z",
     reports: reports.map((r) => ({
       ...r,
+      reporterId: r.reporterId ?? "",
       timestamp: "2026-01-01T00:00:00Z",
       note: "",
       items: {},
@@ -122,9 +124,9 @@ describe("aggregateReporters", () => {
 
 describe("sortRows", () => {
   const rows: ReporterRow[] = [
-    { reporter: "A", xId: "a", reportCount: 3, totalRuns: 100, details: [] },
-    { reporter: "B", xId: "b", reportCount: 1, totalRuns: 300, details: [] },
-    { reporter: "C", xId: "c", reportCount: 2, totalRuns: 200, details: [] },
+    { reporter: "A", reporterId: "", xId: "a", reportCount: 3, totalRuns: 100, details: [] },
+    { reporter: "B", reporterId: "", xId: "b", reportCount: 1, totalRuns: 300, details: [] },
+    { reporter: "C", reporterId: "", xId: "c", reportCount: 2, totalRuns: 200, details: [] },
   ];
 
   test("totalRuns 昇順", () => {

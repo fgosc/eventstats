@@ -7,6 +7,7 @@ function makeReport(overrides: Partial<Report> = {}): Report {
   return {
     id: "r1",
     reporter: "user1",
+    reporterId: "",
     reporterName: "User 1",
     runcount: 100,
     timestamp: "2026-01-01T00:00:00Z",
