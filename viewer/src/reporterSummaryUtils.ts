@@ -53,6 +53,8 @@ export function aggregateReporters(
         totalRuns: 0,
         details: [],
       };
+      if (!entry.reporterId && r.reporterId) entry.reporterId = r.reporterId;
+      if (!entry.xId && r.reporter) entry.xId = r.reporter;
       entry.reportCount += 1;
       entry.totalRuns += r.runcount;
       entry.details.push({
