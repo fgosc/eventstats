@@ -26,6 +26,7 @@ export interface EventsResponse {
 export interface Report {
   id: string;
   reporter: string;
+  reporterId: string;
   reporterName: string;
   runcount: number;
   timestamp: string;

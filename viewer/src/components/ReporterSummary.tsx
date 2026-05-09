@@ -26,16 +26,16 @@ interface Props {
   exclusions: ExclusionsMap;
 }
 
-function XIdLink({
-  xId,
+function ConditionalLink({
+  id,
   href,
   children,
 }: {
-  xId: string;
+  id: string;
   href: string;
   children: React.ReactNode;
 }) {
-  if (!xId || xId === "anonymous") return <>{children}</>;
+  if (!id || id === "anonymous") return <>{children}</>;
   return (
     <a href={href} target="_blank" rel="noopener noreferrer">
       {children}
@@ -172,17 +172,17 @@ export function ReporterSummary({ eventId, quests, exclusions }: Props) {
                     </td>
                     <td style={tdStyleRight}>{i + 1}</td>
                     <td style={tdStyle}>
-                      <XIdLink
-                        xId={r.xId}
-                        href={`https://fgodrop.max747.org/owners/${r.xId}/reports`}
+                      <ConditionalLink
+                        id={r.reporterId}
+                        href={`https://fgodrop.max747.org/owners/${r.reporterId}/reports`}
                       >
                         {r.reporter}
-                      </XIdLink>
+                      </ConditionalLink>
                     </td>
                     <td style={tdStyle}>
-                      <XIdLink xId={r.xId} href={`https://x.com/${r.xId}`}>
+                      <ConditionalLink id={r.xId} href={`https://x.com/${r.xId}`}>
                         {r.xId}
-                      </XIdLink>
+                      </ConditionalLink>
                     </td>
                     <td style={tdStyleRight}>{r.reportCount.toLocaleString()}</td>
                     <td style={tdStyleRight}>{r.totalRuns.toLocaleString()}</td>

@@ -11,6 +11,7 @@ function makeQuestData(
     reporter: string;
     reporterName: string;
     runcount: number;
+    reporterId?: string;
   }>,
 ): QuestData {
   return {
@@ -18,6 +19,7 @@ function makeQuestData(
     lastUpdated: "2026-01-01T00:00:00Z",
     reports: reports.map((r) => ({
       ...r,
+      reporterId: r.reporterId ?? "",
       timestamp: "2026-01-01T00:00:00Z",
       note: "",
       items: {},
@@ -118,13 +120,46 @@ describe("aggregateReporters", () => {
     expect(rows[0].details[0].runcount).toBe(50);
     expect(rows[0].details[0].reportId).toBe("r1");
   });
+
+  test("reporterId を ReporterRow に伝える", () => {
+    const data = [
+      makeQuestData("q1", "Quest 1", [
+        {
+          id: "r1",
+          reporter: "user1",
+          reporterName: "User 1",
+          runcount: 100,
+          reporterId: "owner-abc",
+        },
+      ]),
+    ];
+    const rows = aggregateReporters(data, {});
+    expect(rows[0].reporterId).toBe("owner-abc");
+  });
+
+  test("最初の報告の reporterId が空でも後続報告の値で補完する", () => {
+    const data = [
+      makeQuestData("q1", "Quest 1", [
+        { id: "r1", reporter: "user1", reporterName: "User 1", runcount: 100, reporterId: "" },
+        {
+          id: "r2",
+          reporter: "user1",
+          reporterName: "User 1",
+          runcount: 50,
+          reporterId: "owner-abc",
+        },
+      ]),
+    ];
+    const rows = aggregateReporters(data, {});
+    expect(rows[0].reporterId).toBe("owner-abc");
+  });
 });
 
 describe("sortRows", () => {
   const rows: ReporterRow[] = [
-    { reporter: "A", xId: "a", reportCount: 3, totalRuns: 100, details: [] },
-    { reporter: "B", xId: "b", reportCount: 1, totalRuns: 300, details: [] },
-    { reporter: "C", xId: "c", reportCount: 2, totalRuns: 200, details: [] },
+    { reporter: "A", reporterId: "", xId: "a", reportCount: 3, totalRuns: 100, details: [] },
+    { reporter: "B", reporterId: "", xId: "b", reportCount: 1, totalRuns: 300, details: [] },
+    { reporter: "C", reporterId: "", xId: "c", reportCount: 2, totalRuns: 200, details: [] },
   ];
 
   test("totalRuns 昇順", () => {

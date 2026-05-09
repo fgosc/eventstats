@@ -193,6 +193,7 @@ def process_quest(event_id: str, quest: dict, event_items: set[str]) -> None:
             {
                 "id": report.get("id", report.get("report_id", "")),
                 "reporter": report.get("reporter", ""),
+                "reporterId": report.get("reporter_id", ""),
                 "reporterName": report.get("reporter_name", ""),
                 "runcount": report.get("runcount", 0),
                 "timestamp": report.get("timestamp", ""),
