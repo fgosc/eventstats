@@ -120,6 +120,27 @@ describe("aggregateReporters", () => {
     expect(rows[0].details[0].runcount).toBe(50);
     expect(rows[0].details[0].reportId).toBe("r1");
   });
+
+  test("reporterId を ReporterRow に伝える", () => {
+    const data = [
+      makeQuestData("q1", "Quest 1", [
+        { id: "r1", reporter: "user1", reporterName: "User 1", runcount: 100, reporterId: "owner-abc" },
+      ]),
+    ];
+    const rows = aggregateReporters(data, {});
+    expect(rows[0].reporterId).toBe("owner-abc");
+  });
+
+  test("最初の報告の reporterId が空でも後続報告の値で補完する", () => {
+    const data = [
+      makeQuestData("q1", "Quest 1", [
+        { id: "r1", reporter: "user1", reporterName: "User 1", runcount: 100, reporterId: "" },
+        { id: "r2", reporter: "user1", reporterName: "User 1", runcount: 50, reporterId: "owner-abc" },
+      ]),
+    ];
+    const rows = aggregateReporters(data, {});
+    expect(rows[0].reporterId).toBe("owner-abc");
+  });
 });
 
 describe("sortRows", () => {
