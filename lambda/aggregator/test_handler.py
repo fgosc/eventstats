@@ -2,15 +2,13 @@
 
 import os
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 # boto3 はテスト環境に存在しないため、インポート前にモック化する
 os.environ.setdefault("S3_BUCKET_NAME", "test-bucket")
 sys.modules["boto3"] = MagicMock()
 sys.modules["botocore"] = MagicMock()
 sys.modules["botocore.exceptions"] = MagicMock()
-
-from unittest.mock import patch
 
 from handler import detect_event_items, is_raw_count_report, process_quest, transform_report  # noqa: E402
 
