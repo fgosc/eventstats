@@ -124,7 +124,13 @@ describe("aggregateReporters", () => {
   test("reporterId を ReporterRow に伝える", () => {
     const data = [
       makeQuestData("q1", "Quest 1", [
-        { id: "r1", reporter: "user1", reporterName: "User 1", runcount: 100, reporterId: "owner-abc" },
+        {
+          id: "r1",
+          reporter: "user1",
+          reporterName: "User 1",
+          runcount: 100,
+          reporterId: "owner-abc",
+        },
       ]),
     ];
     const rows = aggregateReporters(data, {});
@@ -135,7 +141,13 @@ describe("aggregateReporters", () => {
     const data = [
       makeQuestData("q1", "Quest 1", [
         { id: "r1", reporter: "user1", reporterName: "User 1", runcount: 100, reporterId: "" },
-        { id: "r2", reporter: "user1", reporterName: "User 1", runcount: 50, reporterId: "owner-abc" },
+        {
+          id: "r2",
+          reporter: "user1",
+          reporterName: "User 1",
+          runcount: 50,
+          reporterId: "owner-abc",
+        },
       ]),
     ];
     const rows = aggregateReporters(data, {});
