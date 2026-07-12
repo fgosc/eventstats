@@ -119,6 +119,13 @@ export function QuestReportManager({ eventId, questId }: Props) {
           {loading && <p style={{ fontSize: 13, color: "#666", margin: 0 }}>読み込み中...</p>}
           {error && <p style={{ color: "red", fontSize: 13, margin: "0 0 6px" }}>{error}</p>}
 
+          {loaded && !loading && orphanExclusions.length > 0 && (
+            <p style={{ fontSize: 12, color: "#666", margin: "0 0 6px" }}>
+              ※ 現在の報告一覧に存在しない除外設定が {orphanExclusions.length}{" "}
+              件あります（過去の報告など）。一覧には表示されませんが、保存時にそのまま保持されます。
+            </p>
+          )}
+
           {loaded && !loading && reports.length === 0 && (
             <p style={{ fontSize: 13, color: "#666", margin: 0 }}>
               報告データがありません（未集計のクエストです）。
