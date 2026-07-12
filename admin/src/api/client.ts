@@ -106,7 +106,12 @@ export async function fetchQuestReports(
   eventId: string,
   questId: string,
 ): Promise<QuestData | null> {
-  const res = await fetch(`${DATA_URL}/${eventId}/${questId}.json`);
+  if (!DATA_URL) {
+    throw new Error("VITE_DATA_URL is not set");
+  }
+  const res = await fetch(
+    `${DATA_URL}/${encodeURIComponent(eventId)}/${encodeURIComponent(questId)}.json`,
+  );
   if (res.status === 403 || res.status === 404) return null;
   if (!res.ok) throw new Error(`Failed to fetch quest data: ${res.status}`);
   return res.json() as Promise<QuestData>;
