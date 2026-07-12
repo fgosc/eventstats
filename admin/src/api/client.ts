@@ -1,7 +1,8 @@
 import { fetchAuthSession } from "aws-amplify/auth";
-import type { EventData, EventsResponse, Exclusion, HarvestQuest } from "../types";
+import type { EventData, EventsResponse, Exclusion, HarvestQuest, QuestData } from "../types";
 
 const API_URL = import.meta.env.VITE_API_URL as string;
+const DATA_URL = import.meta.env.VITE_DATA_URL as string;
 
 /**
  * Cognito の idToken を Bearer トークンとして含む認証ヘッダーを生成する。
@@ -91,4 +92,27 @@ export function updateExclusions(questId: string, exclusions: Exclusion[]) {
  */
 export function fetchHarvestQuests() {
   return request<HarvestQuest[]>("/harvest/quests");
+}
+
+/**
+ * 指定クエストの集計 JSON（報告一覧）を公開データ URL から取得する。
+ * viewer と同じ CloudFront 配下の公開ファイルのため、認証ヘッダーは付けない。
+ * S3 + CloudFront では未作成オブジェクトに 403 が返るため、403/404 は
+ * 「未集計（報告データなし）」として null を返す。
+ * @param eventId イベント ID（JSON パスの一部）
+ * @param questId クエスト ID（JSON パスの一部）
+ */
+export async function fetchQuestReports(
+  eventId: string,
+  questId: string,
+): Promise<QuestData | null> {
+  if (!DATA_URL) {
+    throw new Error("VITE_DATA_URL is not set");
+  }
+  const res = await fetch(
+    `${DATA_URL}/${encodeURIComponent(eventId)}/${encodeURIComponent(questId)}.json`,
+  );
+  if (res.status === 403 || res.status === 404) return null;
+  if (!res.ok) throw new Error(`Failed to fetch quest data: ${res.status}`);
+  return res.json() as Promise<QuestData>;
 }

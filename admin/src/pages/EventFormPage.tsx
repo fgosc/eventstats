@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createEvent, fetchHarvestQuests, getEvents, updateEvent } from "../api/client";
+import { QuestReportManager } from "../components/QuestReportManager";
 import type { EventData, HarvestQuest, Quest } from "../types";
 
 export function EventFormPage() {
@@ -537,6 +538,15 @@ export function EventFormPage() {
                 </div>
               )}
             </div>
+
+            {/* 報告管理（除外編集）: 保存済みイベントかつ questId 入力済みのクエストのみ */}
+            {isEdit && eventId && q.questId && (
+              <QuestReportManager
+                key={`${eventId}:${q.questId}`}
+                eventId={eventId}
+                questId={q.questId}
+              />
+            )}
           </div>
         ))}
 

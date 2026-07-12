@@ -28,6 +28,23 @@ export interface Exclusion {
   reason: string;
 }
 
+export interface Report {
+  id: string;
+  reporter: string;
+  reporterName: string;
+  runcount: number;
+  timestamp: string;
+  note: string;
+  items: Record<string, number | null>;
+  warnings: string[];
+}
+
+export interface QuestData {
+  quest: Quest;
+  lastUpdated: string;
+  reports: Report[];
+}
+
 export interface HarvestQuest {
   id: string;
   name: string;
